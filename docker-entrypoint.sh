@@ -1,6 +1,14 @@
 #!/bin/bash
 set -x
 
+echo $USE_DISPLAY
+export WEBPORT=590${USE_DISPLAY}
+export DISPLAY=:${USE_DISPLAY}
+
+echo $WEBPORT
+echo $DISPLAY
+
+
 mkdir /home/scipionuser/.vnc
 echo $MYVNCPASSWORD
 echo $MYVNCPASSWORD | vncpasswd -f > /home/scipionuser/.vnc/passwd

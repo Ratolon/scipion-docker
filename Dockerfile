@@ -81,6 +81,9 @@ RUN curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz |
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
     cd /opt/websockify && make
 
+RUN curl -fsSL -o /tmp/scipion_latest_linux64_Ubuntu.tgz http://scipion.i2pc.es/startdownload/?bundleId=4
+RUN cd /tmp/ && tar -xzf scipion_latest_linux64_Ubuntu.tgz && mv /tmp/scipion /opt/
+
 COPY self.pem /
 
 RUN echo 'no-remote-connections\n\
@@ -92,7 +95,6 @@ permitted-security-types = TLSVnc, TLSOtp, TLSPlain, TLSNone, X509Vnc, X509Otp, 
 
 ADD turbovncserver.conf /etc/turbovncserver.conf
 
-#ADD genomecruzer /opt/genomecruzer
 
 RUN echo '#!/bin/sh\n\
 vglrun xterm & \
@@ -103,9 +105,9 @@ vglrun openbox\
 
 
 #EXPOSE 590${use_display}
-ENV USE_DISPLAY 7
-ENV WEBPORT 590${USE_DISPLAY}
-ENV DISPLAY :${USE_DISPLAY}
+#ENV USE_DISPLAY 7
+#ENV WEBPORT 590${USE_DISPLAY}
+#ENV DISPLAY :${USE_DISPLAY}
 ENV MYVNCPASSWORD abc
 ENV OSG_FILE_PATH=/opt/genomecruzer/data
 ENV EDITOR=/usr/bin/pluma
@@ -117,7 +119,7 @@ ENV EDITOR=/usr/bin/pluma
 
 #RUN pip install --upgrade pip
 
-ADD scipion/ /opt/scipion/
+#ADD scipion/ /opt/scipion/
 
 RUN groupadd -r scipionuser
 RUN useradd -r -m -d /home/scipionuser -s /bin/bash -g scipionuser scipionuser
