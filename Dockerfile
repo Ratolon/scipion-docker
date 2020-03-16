@@ -58,8 +58,14 @@ RUN apt install -y --no-install-recommends \
 	libxcb-keysyms1 \
 	mesa-utils \
 	pluma \
-	sudo
+	sudo \
+	bison \
+	flex \
+	ssh
 
+RUN DEBIAN_FRONTEND=noninteractive apt install -y \
+	dbus-x11 \
+	xfce4
 
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -98,7 +104,7 @@ ADD turbovncserver.conf /etc/turbovncserver.conf
 
 RUN echo '#!/bin/sh\n\
 vglrun xterm & \
-vglrun openbox\
+vglrun openbox \
 #\nexport DISPLAY=:${DISPLAY}\n\
 #cd /opt/genomecruzer && ./Adrastea &\
 ' >/tmp/xsession; chmod +x /tmp/xsession
@@ -124,6 +130,10 @@ ENV EDITOR=/usr/bin/pluma
 RUN groupadd -r scipionuser
 RUN useradd -r -m -d /home/scipionuser -s /bin/bash -g scipionuser scipionuser
 
+ADD xfce4 /home/scipionuser/.config/
+
+RUN chown -R scipionuser:scipionuser /home/scipionuser
+
 RUN chown -R scipionuser:scipionuser /opt/scipion
 
 USER scipionuser
@@ -134,9 +144,9 @@ RUN sed -i 's/MPI_LIBDIR\s*=.*/MPI_LIBDIR = \/usr\/lib\/x86_64-linux-gnu\/openmp
 RUN sed -i 's/MPI_INCLUDE\s*=.*/MPI_INCLUDE = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/include/' /opt/scipion/config/scipion.conf
 
 RUN /opt/scipion/scipion install -j12
-RUN /opt/scipion/scipion installp -p scipion-em-xmipp -j 12
-RUN /opt/scipion/scipion installp -p scipion-em-eman2 -j 12
-RUN /opt/scipion/scipion installb xmippBin_Debian -j 12
+#RUN /opt/scipion/scipion installp -p scipion-em-xmipp -j 12
+#RUN /opt/scipion/scipion installp -p scipion-em-eman2 -j 12
+#RUN /opt/scipion/scipion installb xmippBin_Debian -j 12
 
 USER root
 RUN mkdir /tmp/.X11-unix
