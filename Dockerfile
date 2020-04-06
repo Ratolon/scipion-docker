@@ -9,7 +9,7 @@
 # docker run --init --runtime=nvidia --name=turbovnc --rm -i -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -p 5902:5902 turbovnc
 # docker exec -ti turbovnc vglrun glxspheres64
 
-FROM nvidia/cuda:10.0-devel-ubuntu18.04
+FROM nvidia/cuda:8.0-runtime-ubuntu16.04
 #FROM nvidia/opengl:1.0-glvnd-runtime-ubuntu18.04
 #FROM k8s.gcr.io/cuda-vector-add:v1.0
 
@@ -34,7 +34,7 @@ RUN apt install -y --no-install-recommends \
         libssl1.0.0 \
         gcc-5 \
         g++-5 cmake openjdk-8-jdk libxft-dev libssl-dev libxext-dev\
- libxml2-dev libreadline7 libquadmath0 libxslt1-dev libopenmpi-dev openmpi-bin\
+ libxml2-dev libquadmath0 libxslt1-dev libopenmpi-dev openmpi-bin\
  libxss-dev libgsl0-dev libx11-dev gfortran libfreetype6-dev scons libfftw3-dev libopencv-dev curl git
 
 RUN apt install -y --no-install-recommends \
@@ -61,11 +61,18 @@ RUN apt install -y --no-install-recommends \
 	sudo \
 	bison \
 	flex \
-	ssh
+	ssh \
+	g++
 
+RUN apt update
 RUN DEBIAN_FRONTEND=noninteractive apt install -y \
 	dbus-x11 \
 	xfce4
+
+RUN apt install -y --no-install-recommends \
+	cuda-core-8-0 \
+#	cuda-libraries-8-0 \
+	cuda-samples-8-0
 
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -142,6 +149,8 @@ RUN echo "" | /opt/scipion/scipion config
 
 RUN sed -i 's/MPI_LIBDIR\s*=.*/MPI_LIBDIR = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/lib/' /opt/scipion/config/scipion.conf
 RUN sed -i 's/MPI_INCLUDE\s*=.*/MPI_INCLUDE = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/include/' /opt/scipion/config/scipion.conf
+RUN echo "RELION_CUDA_LIB = /usr/local/cuda-8.0/lib64" >>  /opt/scipion/config/scipion.conf
+RUN echo "RELION_CUDA_BIN = /usr/local/cuda-8.0/bin" >>  /opt/scipion/config/scipion.conf
 
 RUN /opt/scipion/scipion install -j12
 #RUN /opt/scipion/scipion installp -p scipion-em-xmipp -j 12
@@ -149,7 +158,7 @@ RUN /opt/scipion/scipion install -j12
 #RUN /opt/scipion/scipion installb xmippBin_Debian -j 12
 
 USER root
-RUN mkdir /tmp/.X11-unix
+RUN mkdir /tmp/.X11-unix | true
 RUN chmod -R ugo+rwx /tmp/.X11-unix
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
