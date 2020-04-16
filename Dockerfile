@@ -111,7 +111,8 @@ ADD turbovncserver.conf /etc/turbovncserver.conf
 
 RUN echo '#!/bin/sh\n\
 vglrun xterm & \
-vglrun openbox \
+#vglrun openbox \
+vglrun xfce4-session \
 #\nexport DISPLAY=:${DISPLAY}\n\
 #cd /opt/genomecruzer && ./Adrastea &\
 ' >/tmp/xsession; chmod +x /tmp/xsession
@@ -137,7 +138,10 @@ ENV EDITOR=/usr/bin/pluma
 RUN groupadd -r scipionuser
 RUN useradd -r -m -d /home/scipionuser -s /bin/bash -g scipionuser scipionuser
 
-ADD xfce4 /home/scipionuser/.config/
+#ADD xfce4 /home/scipionuser/.config/
+RUN mkdir /home/scipionuser/Desktop | true
+ADD Scipion.desktop /home/scipionuser/Desktop/
+RUN chmod +x /home/scipionuser/Desktop/Scipion.desktop
 
 RUN chown -R scipionuser:scipionuser /home/scipionuser
 
