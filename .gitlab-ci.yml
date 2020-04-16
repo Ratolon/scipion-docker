@@ -1,0 +1,8 @@
+
+build:
+  stage: build
+  script:
+    - echo $PRIV_KEY > self.pem
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME" .
+  only:
+    - master
