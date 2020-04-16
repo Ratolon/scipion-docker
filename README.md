@@ -47,7 +47,7 @@ docker run --privileged -d -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -e USE_DISPLAY
 ```
 
 Env var "**USE_DISPLAY**" will create new display (e.g. "**:5**").
-Please note that you need new one for each instance. So change the "**USE_DISPLAY**" value for each instance.
+Please note that you need new one for each instance. Therefore change the "**USE_DISPLAY**" value for each instance.
 
 Only one-digit display number is now supported.
 
