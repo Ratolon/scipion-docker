@@ -7,6 +7,15 @@
 * X11 server running
 * **xserver-xorg xdm xauth nvidia-container-toolkit nvidia-container-runtime nvidia-docker2**
 
+## Headless machines
+
+When running on headless machine (or a machine where nobody is playing FPS games all the time), 
+make sure the X server accepts unauthenticated local connections even when a user session is not running. 
+E.g., the /etc/X11/xdm/xdm-config file should contain:
+
+    DisplayManager*authorize:       false
+
+However, such settings can be dangerous if the machine is not dedicated for this purpos, check for possible side effects.
 
 ## Installation of prerequisites
 
