@@ -106,6 +106,8 @@ The log-in password is now hard-coded in **Dockerfile**.
 Open terminal a try "**nvidia-smi**" and "**glxgears -info**" commands.
 Both should print output containing information about your nVidia graphics card.
 
+<!--
 ## Troubleshooting
 
 If the commands described above print output that do not contains information about nVidia card, try to backup and delete file "**/etc/X11/xorg.conf**".
+-->
