@@ -9,6 +9,8 @@
 
 ## Headless machines
 
+### Configure xdm
+
 When running on headless machine (or a machine where nobody is playing FPS games all the time), 
 make sure the X server accepts unauthenticated local connections even when a user session is not running. 
 E.g., the /etc/X11/xdm/xdm-config file should contain:
@@ -16,6 +18,37 @@ E.g., the /etc/X11/xdm/xdm-config file should contain:
     DisplayManager*authorize:       false
 
 However, such settings can be dangerous if the machine is not dedicated for this purpos, check for possible side effects.
+
+### Configure xorg
+<!-- https://virtualgl.org/Documentation/HeadlessNV -->
+
+**1. Run `nvidia-xconfig --query-gpu-info` to obtain the bus ID of the GPU. Example:**
+
+```bash
+Number of GPUs: 1
+
+GPU #0:
+  Name      : GeForce RTX 2080 SUPER
+  UUID      : GPU-4fcfbe08-eee6-df4b-59aa-4c867e089b2f
+  PCI BusID : PCI:10:0:0
+
+  Number of Display Devices: 0
+```
+
+**2. Create an appropriate xorg.conf file for headless operation:**
+
+```bash
+sudo nvidia-xconfig -a --allow-empty-initial-configuration --use-display-device=None \
+--virtual=1920x1200 --busid {busid}
+```
+Replace `{busid}` with the bus ID you obtained in Step 1. Leave out `--use-display-device=None` if the GPU is headless, i.e. if it has no display outputs.
+
+**3. If you are using version 440.xx or later of the nVidia proprietary driver, then edit /etc/X11/xorg.conf and add**
+
+```
+Option "HardDPMS" "false"
+```
+under the Device or Screen section.
 
 ## Installation of prerequisites
 
