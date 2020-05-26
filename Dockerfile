@@ -130,6 +130,12 @@ ENV EDITOR=/usr/bin/pluma
 #ENTRYPOINT /opt/websockify/run ${WEBPORT} --cert=/self.pem --ssl-only --web=/opt/noVNC --wrap-mode=ignore -- vncserver ${DISPLAY} -securitytypes otp -otp -xstartup /tmp/xsession
 #ENTRYPOINT /opt/websockify/run ${WEBPORT} --cert=/self.pem --ssl-only --web=/opt/noVNC --wrap-mode=ignore -- vncserver ${DISPLAY} -xstartup /tmp/xsession
 
+RUN chmod u+s /usr/lib/libvglfaker.so && \
+    chmod u+s /usr/lib32/libvglfaker.so && \
+    chmod u+s /usr/lib/libdlfaker.so && \
+    chmod u+s /usr/lib32/libdlfaker.so
+# https://wiki.archlinux.org/index.php/VirtualGL
+
 
 #RUN pip install --upgrade pip
 
