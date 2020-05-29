@@ -1,6 +1,5 @@
 # Scipion-docker
 
-
 ## Prerequisites (ubuntu packages)
 
 * nvidia drivers
