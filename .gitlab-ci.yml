@@ -1,6 +1,6 @@
 image: docker:latest
 
-service:
+services:
   - docker:dind
 
 before_script:
