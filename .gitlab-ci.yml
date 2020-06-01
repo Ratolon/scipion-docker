@@ -9,6 +9,20 @@ before_script:
 build:
   stage: build
   script:
-          #    - echo $PRIV_KEY > self.pem
+    - pwd
+    - ls -la
+    - cat self.pem
+    - echo "asdfasdf" | self.pem
+    - cat self.pem
+    - echo $PRIV_KEY | self.pem
+    - cat self.pem
     - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
+
+      #test:
+      #  stage: test
+  #  script:
+  #    - ssh -o StrictHostKeyChecking=no ${USER}@${TARGET} "docker run --privileged -d --name=gitlab-test -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -e USE_DISPLAY="1" --rm -p 5901:5901 --mount src=scipion-plugins,dst=/opt/scipion/software/em registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker:$CI_COMMIT_REF_NAME"
+  #    - sleep 180
+  #    - curl --insecure https://${TARGET}:5901 > /dev/null
+  #    - ssh -o StrictHostKeyChecking=no ${USER}@${TARGET} "docker kill gitlab-test"
