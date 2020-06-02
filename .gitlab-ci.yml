@@ -9,13 +9,7 @@ before_script:
 build:
   stage: build
   script:
-    - pwd
-    - ls -la
-    - cat self.pem
-    - echo "asdfasdf" > self.pem
-    - cat self.pem
     - echo "$PRIV_KEY" > self.pem
-    - cat self.pem
     - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
 
