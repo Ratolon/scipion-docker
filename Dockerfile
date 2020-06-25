@@ -94,8 +94,8 @@ RUN groupadd -r scipionuser && \
     useradd -r -m -d /home/scipionuser -s /bin/bash -g scipionuser scipionuser
 
 RUN usermod -aG sudo scipionuser
-RUN echo "abc\nabc" | passwd root
-RUN echo "abc\nabc" | passwd scipionuser
+#RUN echo "abc\nabc" | passwd root
+#RUN echo "abc\nabc" | passwd scipionuser
 
 # Create Scipion icon
 RUN mkdir /home/scipionuser/Desktop | true
@@ -147,11 +147,13 @@ ENV EDITOR=/usr/bin/pluma
 COPY self.pem /
 
 # run docker-entrypoint.sh
-COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY docker-entrypoint-root.sh /
+COPY docker-entrypoint.sh /
+RUN chmod +x /docker-entrypoint-root.sh
 RUN chmod +x /docker-entrypoint.sh
 
-USER scipionuser
+#USER scipionuser
 #######################
 
-ENTRYPOINT ["/docker-entrypoint.sh", "1>/docker-entrypoint.out.log", "2>/docker-entrypoint.err.log"]
+ENTRYPOINT ["/docker-entrypoint-root.sh"]
 
