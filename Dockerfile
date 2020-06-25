@@ -94,8 +94,6 @@ RUN groupadd -r scipionuser && \
     useradd -r -m -d /home/scipionuser -s /bin/bash -g scipionuser scipionuser
 
 RUN usermod -aG sudo scipionuser
-#RUN echo "abc\nabc" | passwd root
-#RUN echo "abc\nabc" | passwd scipionuser
 
 # Create Scipion icon
 RUN mkdir /home/scipionuser/Desktop | true
@@ -151,9 +149,6 @@ COPY docker-entrypoint-root.sh /
 COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint-root.sh
 RUN chmod +x /docker-entrypoint.sh
-
-#USER scipionuser
-#######################
 
 ENTRYPOINT ["/docker-entrypoint-root.sh"]
 
