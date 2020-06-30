@@ -84,7 +84,11 @@ Note that you will now need to start the docker image with "**--runtime=nvidia**
 
 ## Run a container
 
-**Please re-pull the images before running the containers.**
+### Re-pull the images before running the containers
+```bash
+docker pull registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker-plugin-volume:latest
+docker pull registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker:latest
+```
 
 ### Prepare volume with plugins
 
