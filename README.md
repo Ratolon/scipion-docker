@@ -84,9 +84,9 @@ Note that you will now need to start the docker image with "**--runtime=nvidia**
 
 ## Run a container
 
-Please re-pull the images before running the containers.
+**Please re-pull the images before running the containers.**
 
-### (optional) Prepare volume with plugins
+### Prepare volume with plugins
 
 If you want to use plugins, you can create a volume with them.
 For this purpose a special image is created that extract the data into the volume. https://gitlab.ics.muni.cz/eosc-synergy/scipion-docker-plugin-volume
