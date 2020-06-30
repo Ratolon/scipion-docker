@@ -84,8 +84,29 @@ Note that you will now need to start the docker image with "**--runtime=nvidia**
 
 ## Run a container
 
+Please re-pull the images before running the containers.
+
+### (optional) Prepare volume with plugins
+
+If you want to use plugins, you can create a volume with them.
+For this purpose a special image is created that extract the data into the volume. https://gitlab.ics.muni.cz/eosc-synergy/scipion-docker-plugin-volume
+
+Create an empty volume:
+```bash
+docker volume create scipion-plugins
 ```
-docker run --privileged -d -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -e USE_DISPLAY="5" --rm -p 5905:5905 scipion-image
+
+Extract plugin data into the volume:
+```bash
+docker run --rm --mount src=scipion-plugins,dst=/volume registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker-plugin-volume:latest
+```
+
+Wait for the action to complete and run the scipion image.
+
+### Run
+
+```
+docker run --privileged -d --rm -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="abc" -e USER_PASS="abc" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 --mount src=scipion-plugins,dst=/opt/scipion/software/em registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker:latest
 ```
 
 Env var "**USE_DISPLAY**" will create new display (e.g. "**:5**").
