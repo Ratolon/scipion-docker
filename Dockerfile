@@ -90,13 +90,12 @@ RUN chmod u+s /usr/lib/libvglfaker.so && \
     chmod u+s /usr/lib32/libdlfaker.so
 
 # Create scipionuser
-RUN groupadd -r scipionuser && \
-    useradd -r -m -d /home/scipionuser -s /bin/bash -g scipionuser scipionuser
-
-RUN usermod -aG sudo scipionuser
+RUN groupadd --gid 1042 scipionuser && \
+    useradd --uid 1042 --create-home --home-dir /home/scipionuser -s /bin/bash -g scipionuser scipionuser && \
+    usermod -aG sudo scipionuser
 
 # Create Scipion icon
-RUN mkdir /home/scipionuser/Desktop | true
+RUN mkdir /home/scipionuser/Desktop || true
 ADD Scipion.desktop /home/scipionuser/Desktop/
 RUN chmod +x /home/scipionuser/Desktop/Scipion.desktop
 
@@ -131,7 +130,7 @@ permitted-security-types = TLSVnc, TLSOtp, TLSPlain, TLSNone, X509Vnc, X509Otp, 
 ADD turbovncserver.conf /etc/turbovncserver.conf
 
 # Prepare environment
-RUN mkdir /tmp/.X11-unix | true
+RUN mkdir /tmp/.X11-unix || true
 RUN chmod -R ugo+rwx /tmp/.X11-unix
 
 RUN echo '#!/bin/sh\n\
@@ -147,8 +146,8 @@ COPY self.pem /
 # run docker-entrypoint.sh
 COPY docker-entrypoint-root.sh /
 COPY docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint-root.sh
-RUN chmod +x /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint-root.sh && \
+    chmod +x /docker-entrypoint.sh
 
 ENTRYPOINT ["/docker-entrypoint-root.sh"]
 

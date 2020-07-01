@@ -9,4 +9,6 @@ fi
 echo -e "$ROOT_PASS\n$ROOT_PASS" | passwd root
 echo -e "$USER_PASS\n$USER_PASS" | passwd scipionuser
 
+chown scipionuser:scipionuser /opt/scipion/software/em
+
 su -c ./docker-entrypoint.sh scipionuser
