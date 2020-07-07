@@ -109,10 +109,15 @@ USER scipionuser
 # Install Scipion
 RUN echo "" | /opt/scipion/scipion config
 
-RUN sed -i 's/MPI_LIBDIR\s*=.*/MPI_LIBDIR = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/lib/' /opt/scipion/config/scipion.conf && \
-    sed -i 's/MPI_INCLUDE\s*=.*/MPI_INCLUDE = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/include/' /opt/scipion/config/scipion.conf && \
-    echo "RELION_CUDA_LIB = /usr/local/cuda-8.0/lib64" >>  /opt/scipion/config/scipion.conf && \
-    echo "RELION_CUDA_BIN = /usr/local/cuda-8.0/bin" >>  /opt/scipion/config/scipion.conf
+RUN sed -i 's/CUDA\s*=.*/CUDA = True/' /opt/scipion/config/scipion.conf && \
+    sed -i 's/CUDA_LIB\s*=.*/CUDA_LIB = \/usr\/local\/cuda\/lib64/' /opt/scipion/config/scipion.conf && \
+    sed -i 's/CUDA_BIN\s*=.*/CUDA_BIN = \/usr\/local\/cuda\/bin/' /opt/scipion/config/scipion.conf && \
+    echo "RELION_CUDA_LIB = /usr/local/cuda/lib64" >>  /opt/scipion/config/scipion.conf && \
+    echo "RELION_CUDA_BIN = /usr/local/cuda/bin" >>  /opt/scipion/config/scipion.conf && \
+    echo "MOTIONCOR2_BIN = MotionCor2_1.3.0-Cuda101" >>  /opt/scipion/config/scipion.conf && \
+    echo "GCTF = Gctf_v1.18_sm30-75_cu10.1" >>  /opt/scipion/config/scipion.conf && \
+    echo "GAUTOMATCH = Gautomatch_v0.56_sm30-75_cu10.1" >>  /opt/scipion/config/scipion.conf && \
+    sed -i 's/NVCC_INCLUDE\s*=.*/NVCC_INCLUDE = \/usr\/local\/cuda\/include/' /opt/scipion/config/scipion.conf
 
 RUN /opt/scipion/scipion install -j12
 
