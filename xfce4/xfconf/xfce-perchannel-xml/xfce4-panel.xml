@@ -50,22 +50,22 @@
     <property name="plugin-8" type="string" value="separator"/>
     <property name="plugin-9" type="string" value="launcher">
       <property name="items" type="array">
-        <value type="string" value="15861980651.desktop"/>
+        <value type="string" value="15966265331.desktop"/>
       </property>
     </property>
     <property name="plugin-10" type="string" value="launcher">
       <property name="items" type="array">
-        <value type="string" value="15861980652.desktop"/>
+        <value type="string" value="15966265332.desktop"/>
       </property>
     </property>
     <property name="plugin-11" type="string" value="launcher">
       <property name="items" type="array">
-        <value type="string" value="15861980653.desktop"/>
+        <value type="string" value="15966265333.desktop"/>
       </property>
     </property>
     <property name="plugin-12" type="string" value="launcher">
       <property name="items" type="array">
-        <value type="string" value="15861980654.desktop"/>
+        <value type="string" value="15966265334.desktop"/>
       </property>
     </property>
     <property name="plugin-13" type="string" value="separator"/>
