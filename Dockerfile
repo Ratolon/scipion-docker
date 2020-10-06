@@ -109,7 +109,9 @@ USER scipionuser
 # Install Scipion
 RUN echo "" | /opt/scipion/scipion config
 
-RUN sed -i 's/CUDA\s*=.*/CUDA = True/' /opt/scipion/config/scipion.conf && \
+RUN sed -i 's/MPI_LIBDIR\s*=.*/MPI_LIBDIR = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/lib/' /opt/scipion/config/scipion.conf && \
+    sed -i 's/MPI_INCLUDE\s*=.*/MPI_INCLUDE = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/include/' /opt/scipion/config/scipion.conf && \
+    sed -i 's/CUDA\s*=.*/CUDA = True/' /opt/scipion/config/scipion.conf && \
     sed -i 's/CUDA_LIB\s*=.*/CUDA_LIB = \/usr\/local\/cuda\/lib64/' /opt/scipion/config/scipion.conf && \
     sed -i 's/CUDA_BIN\s*=.*/CUDA_BIN = \/usr\/local\/cuda\/bin/' /opt/scipion/config/scipion.conf && \
     echo "RELION_CUDA_LIB = /usr/local/cuda/lib64" >>  /opt/scipion/config/scipion.conf && \
@@ -138,8 +140,10 @@ ADD turbovncserver.conf /etc/turbovncserver.conf
 RUN mkdir /tmp/.X11-unix || true
 RUN chmod -R ugo+rwx /tmp/.X11-unix
 
+COPY xfce4 /home/scipionuser/.config/xfce4/
+RUN chown -R scipionuser:scipionuser /home/scipionuser/.config/xfce4
+
 RUN echo '#!/bin/sh\n\
-vglrun xterm & \
 vglrun xfce4-session \
 ' >/tmp/xsession; chmod +x /tmp/xsession
 
