@@ -3,7 +3,10 @@
 # https://turbovnc.org
 # https://virtualgl.org
 
-FROM nvidia/cudagl:10.1-runtime-ubuntu18.04
+#FROM nvidia/cudagl:10.1-runtime-ubuntu18.04
+
+# cannot compile xmipp using "runtime" image
+FROM nvidia/cudagl:10.1-devel-ubuntu18.04
 
 ARG TURBOVNC_VERSION=2.2.4
 ARG VIRTUALGL_VERSION=2.5.2
@@ -59,6 +62,8 @@ RUN apt update && apt install -y --no-install-recommends \
 	htop \
 	vim
 
+RUN apt-get -y install sudo wget gcc g++ libopenmpi-dev mesa-utils openssh-client cmake libnss3 libfontconfig1 libxrender1 libxtst6 xterm libasound2 libglu1 libxcursor1 libdbus-1-3 libxkbcommon-x11-0 libhdf5-dev
+
 # Install TurboVNC, VirtualGL, noVNC
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -80,8 +85,8 @@ RUN curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz |
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
     cd /opt/websockify && make
 
-RUN curl -fsSL -o /tmp/scipion_latest_linux64_Ubuntu.tgz http://scipion.i2pc.es/startdownload/?bundleId=4
-RUN cd /tmp/ && tar -xzf scipion_latest_linux64_Ubuntu.tgz && mv /tmp/scipion /opt/
+#RUN curl -fsSL -o /tmp/scipion_latest_linux64_Ubuntu.tgz http://scipion.i2pc.es/startdownload/?bundleId=4
+#RUN cd /tmp/ && tar -xzf scipion_latest_linux64_Ubuntu.tgz && mv /tmp/scipion /opt/
 
 # https://wiki.archlinux.org/index.php/VirtualGL
 RUN chmod u+s /usr/lib/libvglfaker.so && \
@@ -96,35 +101,102 @@ RUN groupadd --gid 1042 scipionuser && \
 
 # Create Scipion icon
 RUN mkdir /home/scipionuser/Desktop || true
+ADD scipion_logo.png /home/scipionuser/scipion3/
 ADD Scipion.desktop /home/scipionuser/Desktop/
-RUN chmod +x /home/scipionuser/Desktop/Scipion.desktop
+RUN chmod +x /home/scipionuser/scipion3/scipion_logo.png && \
+    chmod +x /home/scipionuser/Desktop/Scipion.desktop
 
 # Prepare home and Scipion for scipionuser
-RUN chown -R scipionuser:scipionuser /home/scipionuser && \
-    chown -R scipionuser:scipionuser /opt/scipion
+#RUN chown -R scipionuser:scipionuser /home/scipionuser && \
+#    chown -R scipionuser:scipionuser /opt/scipion
+
+RUN chown -R scipionuser:scipionuser /home/scipionuser
+
+# docasne - test v3 using venv
+RUN apt update
+RUN ls /
+#RUN apt install -y python-support
+#RUN update-python-modules -a
+RUN apt install -y python-pip python-dev python3-pip python3-dev python3-h5py python-h5py libhdf5-serial-dev gcc g++ make libopenmpi-dev python3-tk libfftw3-dev libhdf5-dev libtiff-dev libjpeg-dev libsqlite3-dev openjdk-8-jdk
+
+RUN apt install -y libjpeg8-dev libtiff5-dev libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libatlas-base-dev gfortran libhdf5-serial-dev python2.7-dev
+
+ENV CUDA_HOME "/usr/local/cuda"
+#ENV PATH "${CUDA_HOME}/bin:$PATH"
+ENV CUDA_BIN "/usr/local/cuda/bin"
+
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility,display
+
 
 USER scipionuser
 #######################
 
 # Install Scipion
-RUN echo "" | /opt/scipion/scipion config
+#RUN echo "" | /opt/scipion/scipion config
 
-RUN sed -i 's/MPI_LIBDIR\s*=.*/MPI_LIBDIR = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/lib/' /opt/scipion/config/scipion.conf && \
-    sed -i 's/MPI_INCLUDE\s*=.*/MPI_INCLUDE = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/include/' /opt/scipion/config/scipion.conf && \
-    sed -i 's/CUDA\s*=.*/CUDA = True/' /opt/scipion/config/scipion.conf && \
-    sed -i 's/CUDA_LIB\s*=.*/CUDA_LIB = \/usr\/local\/cuda\/lib64/' /opt/scipion/config/scipion.conf && \
-    sed -i 's/CUDA_BIN\s*=.*/CUDA_BIN = \/usr\/local\/cuda\/bin/' /opt/scipion/config/scipion.conf && \
-    echo "RELION_CUDA_LIB = /usr/local/cuda/lib64" >>  /opt/scipion/config/scipion.conf && \
-    echo "RELION_CUDA_BIN = /usr/local/cuda/bin" >>  /opt/scipion/config/scipion.conf && \
-    echo "MOTIONCOR2_BIN = MotionCor2_1.3.0-Cuda101" >>  /opt/scipion/config/scipion.conf && \
-    echo "GCTF = Gctf_v1.18_sm30-75_cu10.1" >>  /opt/scipion/config/scipion.conf && \
-    echo "GAUTOMATCH = Gautomatch_v0.56_sm30-75_cu10.1" >>  /opt/scipion/config/scipion.conf && \
-    sed -i 's/NVCC_INCLUDE\s*=.*/NVCC_INCLUDE = \/usr\/local\/cuda\/include/' /opt/scipion/config/scipion.conf
+#RUN sed -i 's/MPI_LIBDIR\s*=.*/MPI_LIBDIR = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/lib/' /opt/scipion/config/scipion.conf && \
+#    sed -i 's/MPI_INCLUDE\s*=.*/MPI_INCLUDE = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/include/' /opt/scipion/config/scipion.conf && \
+#    sed -i 's/CUDA\s*=.*/CUDA = True/' /opt/scipion/config/scipion.conf && \
+#    sed -i 's/CUDA_LIB\s*=.*/CUDA_LIB = \/usr\/local\/cuda\/lib64/' /opt/scipion/config/scipion.conf && \
+#    sed -i 's/CUDA_BIN\s*=.*/CUDA_BIN = \/usr\/local\/cuda\/bin/' /opt/scipion/config/scipion.conf && \
+#    echo "RELION_CUDA_LIB = /usr/local/cuda/lib64" >>  /opt/scipion/config/scipion.conf && \
+#    echo "RELION_CUDA_BIN = /usr/local/cuda/bin" >>  /opt/scipion/config/scipion.conf && \
+#    echo "MOTIONCOR2_BIN = MotionCor2_1.3.0-Cuda101" >>  /opt/scipion/config/scipion.conf && \
+#    echo "GCTF = Gctf_v1.18_sm30-75_cu10.1" >>  /opt/scipion/config/scipion.conf && \
+#    echo "GAUTOMATCH = Gautomatch_v0.56_sm30-75_cu10.1" >>  /opt/scipion/config/scipion.conf && \
+#    sed -i 's/NVCC_INCLUDE\s*=.*/NVCC_INCLUDE = \/usr\/local\/cuda\/include/' /opt/scipion/config/scipion.conf
 
-RUN /opt/scipion/scipion install -j12
+#RUN /opt/scipion/scipion install -j12
+
+
+RUN ["/bin/bash", "-ci", "echo $CUDA_HOME"]
+RUN ["/bin/bash", "-ci", "echo $PATH"]
+
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /home/scipionuser/miniconda.sh
+RUN bash /home/scipionuser/miniconda.sh -b
+RUN /home/scipionuser/miniconda3/bin/conda init
+RUN ["/bin/bash", "-ci" , "python -m pip install scipion-installer"]
+RUN ["/bin/bash", "-ci" , "python -m scipioninstaller /home/scipionuser/scipion3 -noAsk -j 20"]
+
+#RUN export PATH=$PATH:/usr/local/cuda/bin
+RUN ["/bin/bash", "-ci", "echo $PATH"]
+#RUN python -m pip install --user scipion-installer
+#RUN python -m pip install --user h5py
+#RUN python3 -m pip install --user h5py
+#RUN ["/bin/bash", "-ci", "source /home/scipionuser/scipion/.scipion3env/bin/activate && pip3 install h5py && deactivate"]
+#RUN python -m scipioninstaller /home/scipionuser/scipion -venv -j 20
+
+#RUN conda update -n base -c defaults conda
 
 USER root
 #######################
+
+#RUN  ln -sf /host/usr/lib/nvidia/current/nvidia_drv.so /usr/lib/xorg/modules/drivers/nvidia_drv.so &&\
+#     ln -sf /host/usr/lib/nvidia/current/libglxserver_nvidia.so /usr/lib/xorg/modules/extensions/libglxserver_nvidia.so &&\
+#     ln -sf /host/usr/lib/x86_64-linux-gnu/nvidia/ /usr/lib/x86_64-linux-gnu/nvidia &&\
+#     ln -sf /host/usr/lib/nvidia /usr/lib/nvidia &&\
+#     ln -sf /host/usr/lib/mesa-diverted /usr/lib/mesa-diverted &&\
+#     ln -sf /usr/lib/nvidia/current /etc/alternatives/nvidia &&\
+#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libEGL_nvidia.so.0 /etc/alternatives/nvidia--libEGL_nvidia.so.0-x86_64-linux-gnu &&\
+#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libGLX_nvidia.so.0 /etc/alternatives/nvidia--libGLX_nvidia.so.0-x86_64-linux-gnu &&\
+#     ln -sf /usr/lib/nvidia/current/libglxserver_nvidia.so /etc/alternatives/nvidia--libglxserver_nvidia.so &&\
+#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libnvidia-cfg.so.1 /etc/alternatives/nvidia--libnvidia-cfg.so.1-x86_64-linux-gnu &&\
+#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libnvidia-ml.so.1 /etc/alternatives/nvidia--libnvidia-ml.so.1-x86_64-linux-gnu &&\
+#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libnvidia-opencl.so.1 /etc/alternatives/nvidia--libnvidia-opencl.so.1-x86_64-linux-gnu &&\
+#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libnvidia-ptxjitcompiler.so.1 /etc/alternatives/nvidia--libnvidia-ptxjitcompiler.so.1-x86_64-linux-gnu &&\
+#     ln -sf /usr/lib/nvidia/current/nvidia_drv.so /etc/alternatives/nvidia--nvidia_drv.so &&\
+#     ln -sf /usr/lib/x86_64-linux-gnu/libnvidia-container.so.1.0.7 /usr/lib/x86_64-linux-gnu/libnvidia-container.so.1 &&\
+#     ln -sf /usr/lib/nvidia/nvidia_drv.so /etc/alternatives/glx--nvidia_drv.so &&\
+#     ln -sf /usr/lib/nvidia/libglxserver_nvidia.so /etc/alternatives/glx--libglxserver_nvidia.so &&\
+#     ln -sf /usr/lib/mesa-diverted/x86_64-linux-gnu/libGL.so.1 /etc/alternatives/glx--libGL.so.1-x86_64-linux-gnu &&\
+#     ln -sf /usr/lib/mesa-diverted /etc/alternatives/libGL.so-master &&\
+#     ln -sf /etc/alternatives/glx--libGL.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libGL.so &&\
+#     ln -sf /etc/alternatives/glx--libGL.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libGL.so.1 &&\
+#     ln -sf /etc/alternatives/nvidia--libGLX_nvidia.so.0-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libGLX_nvidia.so.0 &&\
+#     ln -sf /etc/alternatives/glx--libnvidia-cfg.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libnvidia-cfg.so.1 &&\
+#     ln -sf /etc/alternatives/nvidia--libnvidia-ml.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1 &&\
+#     ln -sf /etc/alternatives/nvidia--libnvidia-opencl.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.1 &&\
+#     ln -sf /etc/alternatives/nvidia--libnvidia-ptxjitcompiler.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.1
 
 # Create TurboVNC config
 RUN echo 'no-remote-connections\n\

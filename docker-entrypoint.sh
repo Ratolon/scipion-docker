@@ -12,9 +12,9 @@ echo $WEBPORT
 echo $DISPLAY
 
 # install all installed plugins
-export CORE_COUNT=$(nproc) && \
-for pl in $(cat /opt/scipion/software/em/plugin-list-pl.txt); do /opt/scipion/scipion installp -p $pl -j $CORE_COUNT; done
-for bin in $(cat /opt/scipion/software/em/plugin-list-bin.txt); do /opt/scipion/scipion installb $bin -j $CORE_COUNT; done
+#export CORE_COUNT=$(nproc) && \
+#for pl in $(cat /opt/scipion/software/em/plugin-list-pl.txt); do /opt/scipion/scipion installp -p $pl -j $CORE_COUNT; done
+#for bin in $(cat /opt/scipion/software/em/plugin-list-bin.txt); do /opt/scipion/scipion installb $bin -j $CORE_COUNT; done
 
 mkdir /home/scipionuser/.vnc
 echo $MYVNCPASSWORD
