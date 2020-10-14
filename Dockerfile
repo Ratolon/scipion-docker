@@ -14,6 +14,11 @@ ARG LIBJPEG_VERSION=1.5.2
 ARG WEBSOCKIFY_VERSION=0.8.0
 ARG NOVNC_VERSION=1.1.0
 
+ARG S_USER=scipionuser
+ARG S_USER_HOME=/home/${S_USER}
+
+ARG CORE_COUNT
+
 RUN apt update && apt upgrade -y
 
 RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
@@ -64,6 +69,12 @@ RUN apt update && apt install -y --no-install-recommends \
 
 RUN apt-get -y install sudo wget gcc g++ libopenmpi-dev mesa-utils openssh-client cmake libnss3 libfontconfig1 libxrender1 libxtst6 xterm libasound2 libglu1 libxcursor1 libdbus-1-3 libxkbcommon-x11-0 libhdf5-dev
 
+# conda
+RUN apt-get install -y gcc-8 g++-8 libopenmpi-dev make
+
+# venv
+#RUN apt-get install -y gcc g++ make libopenmpi-dev python3-tk libfftw3-dev libhdf5-dev libtiff-dev libjpeg-dev libsqlite3-dev openjdk-8-jdk
+
 # Install TurboVNC, VirtualGL, noVNC
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -88,38 +99,31 @@ RUN curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz |
 #RUN curl -fsSL -o /tmp/scipion_latest_linux64_Ubuntu.tgz http://scipion.i2pc.es/startdownload/?bundleId=4
 #RUN cd /tmp/ && tar -xzf scipion_latest_linux64_Ubuntu.tgz && mv /tmp/scipion /opt/
 
-# https://wiki.archlinux.org/index.php/VirtualGL
-RUN chmod u+s /usr/lib/libvglfaker.so && \
-    chmod u+s /usr/lib32/libvglfaker.so && \
-    chmod u+s /usr/lib/libdlfaker.so && \
-    chmod u+s /usr/lib32/libdlfaker.so
 
 # Create scipionuser
-RUN groupadd --gid 1042 scipionuser && \
-    useradd --uid 1042 --create-home --home-dir /home/scipionuser -s /bin/bash -g scipionuser scipionuser && \
-    usermod -aG sudo scipionuser
+RUN groupadd --gid 1042 ${S_USER} && \
+    useradd --uid 1042 --create-home --home-dir ${S_USER_HOME} -s /bin/bash -g ${S_USER} ${S_USER} && \
+    usermod -aG sudo ${S_USER}
 
 # Create Scipion icon
-RUN mkdir /home/scipionuser/Desktop || true
-ADD scipion_logo.png /home/scipionuser/scipion3/
-ADD Scipion.desktop /home/scipionuser/Desktop/
-RUN chmod +x /home/scipionuser/scipion3/scipion_logo.png && \
-    chmod +x /home/scipionuser/Desktop/Scipion.desktop
+RUN mkdir ${S_USER_HOME}/Desktop || true
+ADD res/scipion_logo.png ${S_USER_HOME}/scipion3/
+ADD res/Scipion.desktop ${S_USER_HOME}/Desktop/
+RUN chmod +x ${S_USER_HOME}/scipion3/scipion_logo.png && \
+    chmod +x ${S_USER_HOME}/Desktop/Scipion.desktop
 
 # Prepare home and Scipion for scipionuser
 #RUN chown -R scipionuser:scipionuser /home/scipionuser && \
 #    chown -R scipionuser:scipionuser /opt/scipion
 
-RUN chown -R scipionuser:scipionuser /home/scipionuser
+RUN chown -R ${S_USER}:${S_USER} ${S_USER_HOME}
 
 # docasne - test v3 using venv
-RUN apt update
-RUN ls /
 #RUN apt install -y python-support
 #RUN update-python-modules -a
-RUN apt install -y python-pip python-dev python3-pip python3-dev python3-h5py python-h5py libhdf5-serial-dev gcc g++ make libopenmpi-dev python3-tk libfftw3-dev libhdf5-dev libtiff-dev libjpeg-dev libsqlite3-dev openjdk-8-jdk
+#RUN apt install -y python-pip python-dev python3-pip python3-dev python3-h5py python-h5py libhdf5-serial-dev gcc g++ make libopenmpi-dev python3-tk libfftw3-dev libhdf5-dev libtiff-dev libjpeg-dev libsqlite3-dev openjdk-8-jdk
 
-RUN apt install -y libjpeg8-dev libtiff5-dev libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libatlas-base-dev gfortran libhdf5-serial-dev python2.7-dev
+#RUN apt install -y libjpeg8-dev libtiff5-dev libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libatlas-base-dev gfortran libhdf5-serial-dev python2.7-dev
 
 ENV CUDA_HOME "/usr/local/cuda"
 #ENV PATH "${CUDA_HOME}/bin:$PATH"
@@ -152,11 +156,11 @@ USER scipionuser
 RUN ["/bin/bash", "-ci", "echo $CUDA_HOME"]
 RUN ["/bin/bash", "-ci", "echo $PATH"]
 
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /home/scipionuser/miniconda.sh
-RUN bash /home/scipionuser/miniconda.sh -b
-RUN /home/scipionuser/miniconda3/bin/conda init
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${S_USER_HOME}/miniconda.sh
+RUN bash ${S_USER_HOME}/miniconda.sh -b
+RUN ${S_USER_HOME}/miniconda3/bin/conda init
 RUN ["/bin/bash", "-ci" , "python -m pip install scipion-installer"]
-RUN ["/bin/bash", "-ci" , "python -m scipioninstaller /home/scipionuser/scipion3 -noAsk -j 20"]
+RUN ["/bin/bash", "-ci" , "python -m scipioninstaller /home/scipionuser/scipion3 -noAsk -j ${CORE_COUNT}"]
 
 #RUN export PATH=$PATH:/usr/local/cuda/bin
 RUN ["/bin/bash", "-ci", "echo $PATH"]
@@ -164,39 +168,13 @@ RUN ["/bin/bash", "-ci", "echo $PATH"]
 #RUN python -m pip install --user h5py
 #RUN python3 -m pip install --user h5py
 #RUN ["/bin/bash", "-ci", "source /home/scipionuser/scipion/.scipion3env/bin/activate && pip3 install h5py && deactivate"]
-#RUN python -m scipioninstaller /home/scipionuser/scipion -venv -j 20
+#RUN python -m scipioninstaller /home/scipionuser/scipion -venv -j ${CORE_COUNT}
 
 #RUN conda update -n base -c defaults conda
 
 USER root
 #######################
 
-#RUN  ln -sf /host/usr/lib/nvidia/current/nvidia_drv.so /usr/lib/xorg/modules/drivers/nvidia_drv.so &&\
-#     ln -sf /host/usr/lib/nvidia/current/libglxserver_nvidia.so /usr/lib/xorg/modules/extensions/libglxserver_nvidia.so &&\
-#     ln -sf /host/usr/lib/x86_64-linux-gnu/nvidia/ /usr/lib/x86_64-linux-gnu/nvidia &&\
-#     ln -sf /host/usr/lib/nvidia /usr/lib/nvidia &&\
-#     ln -sf /host/usr/lib/mesa-diverted /usr/lib/mesa-diverted &&\
-#     ln -sf /usr/lib/nvidia/current /etc/alternatives/nvidia &&\
-#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libEGL_nvidia.so.0 /etc/alternatives/nvidia--libEGL_nvidia.so.0-x86_64-linux-gnu &&\
-#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libGLX_nvidia.so.0 /etc/alternatives/nvidia--libGLX_nvidia.so.0-x86_64-linux-gnu &&\
-#     ln -sf /usr/lib/nvidia/current/libglxserver_nvidia.so /etc/alternatives/nvidia--libglxserver_nvidia.so &&\
-#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libnvidia-cfg.so.1 /etc/alternatives/nvidia--libnvidia-cfg.so.1-x86_64-linux-gnu &&\
-#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libnvidia-ml.so.1 /etc/alternatives/nvidia--libnvidia-ml.so.1-x86_64-linux-gnu &&\
-#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libnvidia-opencl.so.1 /etc/alternatives/nvidia--libnvidia-opencl.so.1-x86_64-linux-gnu &&\
-#     ln -sf /usr/lib/x86_64-linux-gnu/nvidia/current/libnvidia-ptxjitcompiler.so.1 /etc/alternatives/nvidia--libnvidia-ptxjitcompiler.so.1-x86_64-linux-gnu &&\
-#     ln -sf /usr/lib/nvidia/current/nvidia_drv.so /etc/alternatives/nvidia--nvidia_drv.so &&\
-#     ln -sf /usr/lib/x86_64-linux-gnu/libnvidia-container.so.1.0.7 /usr/lib/x86_64-linux-gnu/libnvidia-container.so.1 &&\
-#     ln -sf /usr/lib/nvidia/nvidia_drv.so /etc/alternatives/glx--nvidia_drv.so &&\
-#     ln -sf /usr/lib/nvidia/libglxserver_nvidia.so /etc/alternatives/glx--libglxserver_nvidia.so &&\
-#     ln -sf /usr/lib/mesa-diverted/x86_64-linux-gnu/libGL.so.1 /etc/alternatives/glx--libGL.so.1-x86_64-linux-gnu &&\
-#     ln -sf /usr/lib/mesa-diverted /etc/alternatives/libGL.so-master &&\
-#     ln -sf /etc/alternatives/glx--libGL.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libGL.so &&\
-#     ln -sf /etc/alternatives/glx--libGL.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libGL.so.1 &&\
-#     ln -sf /etc/alternatives/nvidia--libGLX_nvidia.so.0-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libGLX_nvidia.so.0 &&\
-#     ln -sf /etc/alternatives/glx--libnvidia-cfg.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libnvidia-cfg.so.1 &&\
-#     ln -sf /etc/alternatives/nvidia--libnvidia-ml.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1 &&\
-#     ln -sf /etc/alternatives/nvidia--libnvidia-opencl.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.1 &&\
-#     ln -sf /etc/alternatives/nvidia--libnvidia-ptxjitcompiler.so.1-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.1
 
 # Create TurboVNC config
 RUN echo 'no-remote-connections\n\
@@ -212,8 +190,8 @@ ADD turbovncserver.conf /etc/turbovncserver.conf
 RUN mkdir /tmp/.X11-unix || true
 RUN chmod -R ugo+rwx /tmp/.X11-unix
 
-COPY xfce4 /home/scipionuser/.config/xfce4/
-RUN chown -R scipionuser:scipionuser /home/scipionuser/.config/xfce4
+COPY xfce4 ${S_USER_HOME}/.config/xfce4/
+RUN chown -R ${S_USER}:${S_USER} ${S_USER_HOME}/.config/xfce4
 
 RUN echo '#!/bin/sh\n\
 vglrun xfce4-session \
