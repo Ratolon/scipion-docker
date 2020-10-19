@@ -17,8 +17,6 @@ ARG NOVNC_VERSION=1.1.0
 ARG S_USER=scipionuser
 ARG S_USER_HOME=/home/${S_USER}
 
-ARG CORE_COUNT
-
 RUN apt update && apt upgrade -y
 
 RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
@@ -49,10 +47,7 @@ RUN apt update && apt install -y --no-install-recommends \
 	bison \
 	flex \
 	ssh \
-	g++ \
         libssl1.0.0 \
-        gcc-5 \
-        g++-5 \
 cmake openjdk-8-jdk libxft-dev libssl-dev libxext-dev\
  libxml2-dev libquadmath0 libxslt1-dev libopenmpi-dev openmpi-bin\
  libxss-dev libgsl0-dev libx11-dev gfortran libfreetype6-dev scons libfftw3-dev libopencv-dev git
@@ -67,10 +62,8 @@ RUN apt update && apt install -y --no-install-recommends \
 	htop \
 	vim
 
-RUN apt-get -y install sudo wget gcc g++ libopenmpi-dev mesa-utils openssh-client cmake libnss3 libfontconfig1 libxrender1 libxtst6 xterm libasound2 libglu1 libxcursor1 libdbus-1-3 libxkbcommon-x11-0 libhdf5-dev
-
 # conda
-RUN apt-get install -y gcc-8 g++-8 libopenmpi-dev make
+RUN apt-get -y install sudo wget gcc g++ libopenmpi-dev mesa-utils openssh-client cmake libnss3 libfontconfig1 libxrender1 libxtst6 xterm libasound2 libglu1 libxcursor1 libdbus-1-3 libxkbcommon-x11-0 libhdf5-dev
 
 # venv
 #RUN apt-get install -y gcc g++ make libopenmpi-dev python3-tk libfftw3-dev libhdf5-dev libtiff-dev libjpeg-dev libsqlite3-dev openjdk-8-jdk
@@ -132,7 +125,7 @@ ENV CUDA_BIN "/usr/local/cuda/bin"
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility,display
 
 
-USER scipionuser
+USER ${S_USER}
 #######################
 
 # Install Scipion
@@ -168,7 +161,7 @@ RUN ["/bin/bash", "-ci", "echo $PATH"]
 #RUN python -m pip install --user h5py
 #RUN python3 -m pip install --user h5py
 #RUN ["/bin/bash", "-ci", "source /home/scipionuser/scipion/.scipion3env/bin/activate && pip3 install h5py && deactivate"]
-#RUN python -m scipioninstaller /home/scipionuser/scipion -venv -j ${CORE_COUNT}
+#RUN python -m scipioninstaller /home/scipionuser/scipion -venv -j $(nproc)
 
 #RUN conda update -n base -c defaults conda
 
