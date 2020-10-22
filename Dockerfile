@@ -153,7 +153,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
 RUN bash ${S_USER_HOME}/miniconda.sh -b
 RUN ${S_USER_HOME}/miniconda3/bin/conda init
 RUN ["/bin/bash", "-ci" , "python -m pip install scipion-installer"]
-RUN ["/bin/bash", "-ci" , "python -m scipioninstaller /home/scipionuser/scipion3 -noAsk -j ${CORE_COUNT}"]
+RUN ["/bin/bash", "-ci" , "python -m scipioninstaller /home/scipionuser/scipion3 -noAsk -j $(nproc)"]
 
 #RUN export PATH=$PATH:/usr/local/cuda/bin
 RUN ["/bin/bash", "-ci", "echo $PATH"]
