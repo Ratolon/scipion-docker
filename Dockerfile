@@ -194,6 +194,8 @@ ENV MYVNCPASSWORD abc
 ENV EDITOR=/usr/bin/pluma
 
 COPY self.pem /
+COPY plugin-list-pl.txt ${S_USER_HOME}/
+COPY plugin-list-bin.txt ${S_USER_HOME}/
 
 # run docker-entrypoint.sh
 COPY docker-entrypoint-root.sh /
