@@ -177,7 +177,7 @@ no-pam-sessions\n\
 permitted-security-types = TLSVnc, TLSOtp, TLSPlain, TLSNone, X509Vnc, X509Otp, X509Plain, X509None, VNC, OTP, UnixLogin, Plain\
 ' > /etc/turbovncserver-security.conf
 
-ADD turbovncserver.conf /etc/turbovncserver.conf
+ADD res/turbovncserver.conf /etc/turbovncserver.conf
 
 # Prepare environment
 RUN mkdir /tmp/.X11-unix || true
@@ -187,7 +187,7 @@ COPY xfce4 ${S_USER_HOME}/.config/xfce4/
 RUN chown -R ${S_USER}:${S_USER} ${S_USER_HOME}/.config/xfce4
 
 RUN echo '#!/bin/sh\n\
-vglrun xfce4-session \
+xfce4-session \
 ' >/tmp/xsession; chmod +x /tmp/xsession
 
 ENV MYVNCPASSWORD abc
