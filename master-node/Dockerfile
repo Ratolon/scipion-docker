@@ -48,7 +48,7 @@ RUN apt update && apt install -y --no-install-recommends \
 	flex \
 	ssh \
         libssl1.0.0 \
-cmake openjdk-8-jdk libxft-dev libssl-dev libxext-dev\
+cmake libxft-dev libssl-dev libxext-dev\
  libxml2-dev libquadmath0 libxslt1-dev libopenmpi-dev openmpi-bin\
  libxss-dev libgsl0-dev libx11-dev gfortran libfreetype6-dev scons libfftw3-dev libopencv-dev git
 
@@ -194,8 +194,7 @@ ENV MYVNCPASSWORD abc
 ENV EDITOR=/usr/bin/pluma
 
 COPY self.pem /
-COPY plugin-list-pl.txt ${S_USER_HOME}/
-COPY plugin-list-bin.txt ${S_USER_HOME}/
+COPY plugin-list.txt ${S_USER_HOME}/
 
 # run docker-entrypoint.sh
 COPY docker-entrypoint-root.sh /

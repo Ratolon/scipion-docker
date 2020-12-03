@@ -9,21 +9,21 @@ before_script:
 build_master:
   stage: build
   script:
-    - echo "$PRIV_KEY" > self.pem
-    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME" .
-    - docker build --pull -t "$CI_REGISTRY_IMAGE:latest" .
+    - cd master-node && echo "$PRIV_KEY" > self.pem
+    - cd master-node && docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME" .
+    - cd master-node && docker build --pull -t "$CI_REGISTRY_IMAGE:latest" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
     - docker push "$CI_REGISTRY_IMAGE:latest"
   only:
     - master
 
-build:
+build_dev:
   stage: build
   script:
-    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME" .
+    - cd master-node && docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
-  except:
-    - master
+  only:
+    - dev
 
       #test:
       #  stage: test
