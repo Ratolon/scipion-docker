@@ -60,12 +60,12 @@ RUN apt update && apt install -y --no-install-recommends \
 # Required by Scipion
 RUN apt update && apt install -y \
 	libxv1
+	openjdk-8-jdk
+	libfftw3-dev
+	libtiff-dev
 
-# conda
+# Required by Scipion for conda installation
 RUN apt-get -y install sudo wget gcc g++ libopenmpi-dev mesa-utils openssh-client cmake libnss3 libfontconfig1 libxrender1 libxtst6 xterm libasound2 libglu1 libxcursor1 libdbus-1-3 libxkbcommon-x11-0 libhdf5-dev
-
-# venv
-#RUN apt-get install -y gcc g++ make libopenmpi-dev python3-tk libfftw3-dev libhdf5-dev libtiff-dev libjpeg-dev libsqlite3-dev openjdk-8-jdk
 
 # Clean apt
 RUN rm -rf /var/lib/apt/lists/*
@@ -103,13 +103,6 @@ RUN chmod +x ${S_USER_HOME}/scipion3/scipion_logo.png && \
 
 RUN chown -R ${S_USER}:${S_USER} ${S_USER_HOME}
 
-# docasne - test v3 using venv
-#RUN apt install -y python-support
-#RUN update-python-modules -a
-#RUN apt install -y python-pip python-dev python3-pip python3-dev python3-h5py python-h5py libhdf5-serial-dev gcc g++ make libopenmpi-dev python3-tk libfftw3-dev libhdf5-dev libtiff-dev libjpeg-dev libsqlite3-dev openjdk-8-jdk
-
-#RUN apt install -y libjpeg8-dev libtiff5-dev libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libatlas-base-dev gfortran libhdf5-serial-dev python2.7-dev
-
 ENV CUDA_HOME "/usr/local/cuda"
 #ENV PATH "${CUDA_HOME}/bin:$PATH"
 ENV CUDA_BIN "/usr/local/cuda/bin"
@@ -119,24 +112,6 @@ ENV NVIDIA_DRIVER_CAPABILITIES compute,utility,display
 
 USER ${S_USER}
 #######################
-
-# Install Scipion
-#RUN echo "" | /opt/scipion/scipion config
-
-#RUN sed -i 's/MPI_LIBDIR\s*=.*/MPI_LIBDIR = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/lib/' /opt/scipion/config/scipion.conf && \
-#    sed -i 's/MPI_INCLUDE\s*=.*/MPI_INCLUDE = \/usr\/lib\/x86_64-linux-gnu\/openmpi\/include/' /opt/scipion/config/scipion.conf && \
-#    sed -i 's/CUDA\s*=.*/CUDA = True/' /opt/scipion/config/scipion.conf && \
-#    sed -i 's/CUDA_LIB\s*=.*/CUDA_LIB = \/usr\/local\/cuda\/lib64/' /opt/scipion/config/scipion.conf && \
-#    sed -i 's/CUDA_BIN\s*=.*/CUDA_BIN = \/usr\/local\/cuda\/bin/' /opt/scipion/config/scipion.conf && \
-#    echo "RELION_CUDA_LIB = /usr/local/cuda/lib64" >>  /opt/scipion/config/scipion.conf && \
-#    echo "RELION_CUDA_BIN = /usr/local/cuda/bin" >>  /opt/scipion/config/scipion.conf && \
-#    echo "MOTIONCOR2_BIN = MotionCor2_1.3.0-Cuda101" >>  /opt/scipion/config/scipion.conf && \
-#    echo "GCTF = Gctf_v1.18_sm30-75_cu10.1" >>  /opt/scipion/config/scipion.conf && \
-#    echo "GAUTOMATCH = Gautomatch_v0.56_sm30-75_cu10.1" >>  /opt/scipion/config/scipion.conf && \
-#    sed -i 's/NVCC_INCLUDE\s*=.*/NVCC_INCLUDE = \/usr\/local\/cuda\/include/' /opt/scipion/config/scipion.conf
-
-#RUN /opt/scipion/scipion install -j12
-
 
 RUN ["/bin/bash", "-ci", "echo $CUDA_HOME"]
 RUN ["/bin/bash", "-ci", "echo $PATH"]
@@ -152,19 +127,9 @@ RUN ["/bin/bash", "-ci" , "python -m scipioninstaller /home/scipionuser/scipion3
 COPY plugin-list.txt ${S_USER_HOME}/
 RUN for pl in $(cat ${S_USER_HOME}/plugin-list.txt); do ${S_USER_HOME}/scipion3/scipion3 installp -p $pl -j $(nproc) --noBin; done
 
-#RUN export PATH=$PATH:/usr/local/cuda/bin
-RUN ["/bin/bash", "-ci", "echo $PATH"]
-#RUN python -m pip install --user scipion-installer
-#RUN python -m pip install --user h5py
-#RUN python3 -m pip install --user h5py
-#RUN ["/bin/bash", "-ci", "source /home/scipionuser/scipion/.scipion3env/bin/activate && pip3 install h5py && deactivate"]
-#RUN python -m scipioninstaller /home/scipionuser/scipion -venv -j $(nproc)
-
-#RUN conda update -n base -c defaults conda
 
 USER root
 #######################
-
 
 # Create TurboVNC config
 RUN echo 'no-remote-connections\n\
