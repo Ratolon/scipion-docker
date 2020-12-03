@@ -19,48 +19,47 @@ ARG S_USER_HOME=/home/${S_USER}
 
 RUN apt update && apt upgrade -y
 
-RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
+RUN apt update && DEBIAN_FRONTEND="noninteractive" apt install -y \
+	tzdata
 
-
-# Install necessary packages
-RUN apt update && apt install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        wget \
-        gcc \
-        libc6-dev \
-        libglu1 \
-        libsm6 \
-        libxv1 \
-        make \
-        python \
-        python-numpy \
-        x11-xkb-utils \
-        xauth \
-        xfonts-base \
-        xkb-data \
+# Install necessary packages - xfce4, term, editor, ssh
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+	bash \
+	make \
+	curl \
+	wget \
+	dbus-x11 \
+	xfce4 \
+	xauth \
 	xterm \
-        libdbus-1-3 \
-	libxcb-keysyms1 \
 	pluma \
-	sudo \
+	openssh-client \
+	ca-certificates \
 	bison \
 	flex \
-	ssh \
-        libssl1.0.0 \
-cmake libxft-dev libssl-dev libxext-dev\
- libxml2-dev libquadmath0 libxslt1-dev libopenmpi-dev openmpi-bin\
- libxss-dev libgsl0-dev libx11-dev gfortran libfreetype6-dev scons libfftw3-dev libopencv-dev git
+	git
+# bison, flex, ca-certificates, git ??
 
-RUN apt update
-RUN DEBIAN_FRONTEND=noninteractive apt install -y \
-	dbus-x11 \
-	xfce4
-
+# libjpeg-turbo requirements
 RUN apt update && apt install -y --no-install-recommends \
+	cmake \
+	gcc
+
+# websockify requirements
+RUN apt update && apt install -y --no-install-recommends \
+	python-numpy
+
+# Install useful packages
+RUN apt update && apt install -y --no-install-recommends \
+	git \
+	vim \
+	sudo \
 	mesa-utils \
-	htop \
-	vim
+	htop
+
+# Required by Scipion
+RUN apt update && apt install -y \
+	libxv1
 
 # conda
 RUN apt-get -y install sudo wget gcc g++ libopenmpi-dev mesa-utils openssh-client cmake libnss3 libfontconfig1 libxrender1 libxtst6 xterm libasound2 libglu1 libxcursor1 libdbus-1-3 libxkbcommon-x11-0 libhdf5-dev
@@ -68,9 +67,10 @@ RUN apt-get -y install sudo wget gcc g++ libopenmpi-dev mesa-utils openssh-clien
 # venv
 #RUN apt-get install -y gcc g++ make libopenmpi-dev python3-tk libfftw3-dev libhdf5-dev libtiff-dev libjpeg-dev libsqlite3-dev openjdk-8-jdk
 
-# Install TurboVNC, VirtualGL, noVNC
+# Clean apt
 RUN rm -rf /var/lib/apt/lists/*
 
+# Install TurboVNC, VirtualGL, noVNC
 RUN cd /tmp && \
     curl -fsSL -O https://svwh.dl.sourceforge.net/project/turbovnc/${TURBOVNC_VERSION}/turbovnc_${TURBOVNC_VERSION}_amd64.deb \
         -O https://svwh.dl.sourceforge.net/project/libjpeg-turbo/${LIBJPEG_VERSION}/libjpeg-turbo-official_${LIBJPEG_VERSION}_amd64.deb \
@@ -89,10 +89,6 @@ RUN curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz |
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
     cd /opt/websockify && make
 
-#RUN curl -fsSL -o /tmp/scipion_latest_linux64_Ubuntu.tgz http://scipion.i2pc.es/startdownload/?bundleId=4
-#RUN cd /tmp/ && tar -xzf scipion_latest_linux64_Ubuntu.tgz && mv /tmp/scipion /opt/
-
-
 # Create scipionuser
 RUN groupadd --gid 1042 ${S_USER} && \
     useradd --uid 1042 --create-home --home-dir ${S_USER_HOME} -s /bin/bash -g ${S_USER} ${S_USER} && \
@@ -104,10 +100,6 @@ ADD res/scipion_logo.png ${S_USER_HOME}/scipion3/
 ADD res/Scipion.desktop ${S_USER_HOME}/Desktop/
 RUN chmod +x ${S_USER_HOME}/scipion3/scipion_logo.png && \
     chmod +x ${S_USER_HOME}/Desktop/Scipion.desktop
-
-# Prepare home and Scipion for scipionuser
-#RUN chown -R scipionuser:scipionuser /home/scipionuser && \
-#    chown -R scipionuser:scipionuser /opt/scipion
 
 RUN chown -R ${S_USER}:${S_USER} ${S_USER_HOME}
 
@@ -149,11 +141,16 @@ USER ${S_USER}
 RUN ["/bin/bash", "-ci", "echo $CUDA_HOME"]
 RUN ["/bin/bash", "-ci", "echo $PATH"]
 
+# Install Scipion
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${S_USER_HOME}/miniconda.sh
 RUN bash ${S_USER_HOME}/miniconda.sh -b
 RUN ${S_USER_HOME}/miniconda3/bin/conda init
 RUN ["/bin/bash", "-ci" , "python -m pip install scipion-installer"]
 RUN ["/bin/bash", "-ci" , "python -m scipioninstaller /home/scipionuser/scipion3 -noAsk -j $(nproc)"]
+
+# Install plugins for Scipion
+COPY plugin-list.txt ${S_USER_HOME}/
+RUN for pl in $(cat ${S_USER_HOME}/plugin-list.txt); do ${S_USER_HOME}/scipion3/scipion3 installp -p $pl -j $(nproc) --noBin; done
 
 #RUN export PATH=$PATH:/usr/local/cuda/bin
 RUN ["/bin/bash", "-ci", "echo $PATH"]
@@ -194,7 +191,6 @@ ENV MYVNCPASSWORD abc
 ENV EDITOR=/usr/bin/pluma
 
 COPY self.pem /
-COPY plugin-list.txt ${S_USER_HOME}/
 
 # run docker-entrypoint.sh
 COPY docker-entrypoint-root.sh /
