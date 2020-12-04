@@ -10,65 +10,67 @@ stages:
   - build_base_image
   - build_node_image
 
-build_base_image_master:
+.build_image:
+  script: &build_node_image
+    # replace tag for a base image with branch name
+    # IF "node" build stage
+    - |
+        if [ "${BUILD_STAGE}" = "node" ]; then
+            cd ${NODE_TYPE}
+            sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:${CI_COMMIT_REF_NAME}/' Dockerfile
+        fi
+
+    # add priv key for the MN
+    # IF "master-image" node image
+    - |
+        if [ "${NODE_TYPE}" = "master" ]; then
+            cd master-image
+            echo "$PRIV_KEY" > self.pem;
+        fi
+
+    # build and push the base-image / MN-image / WN-image
+    - cd ${NODE_TYPE} && docker build --pull --cache-from ${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME} -t "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME}" .
+    - docker push "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME}"
+
+    # build and tag the image for master branch also with the string "latest"
+    # IF "master" branch
+    - |
+        if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then
+            cd ${NODE_TYPE}
+            docker build --pull -t "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:latest" .
+            docker push "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:latest"
+        fi
+
+build_base_image:
   stage: build_base_image
+  variables:
+    NODE_TYPE: base-image
+    BUILD_STAGE: base
   script:
-    - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME" .
-    - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:latest" .
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker push "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME"
-    - docker push "${CI_REGISTRY_IMAGE}-base-image:latest"
+    *build_image
   only:
-    - master
+    master
+    dev
 
-build_base_image_dev:
-  stage: build_base_image
-  script:
-    - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME" .
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker push "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME"
-  only:
-    - dev
-
-build_master_node_master:
+build_master_node:
   stage: build_node_image
+  variables:
+    NODE_TYPE: master-image
+    BUILD_STAGE: node
   script:
-    - cd master-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:master/' Dockerfile
-    - cd master-node && echo "$PRIV_KEY" > self.pem
-    - cd master-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-master-node:$CI_COMMIT_REF_NAME" .
-    - cd master-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-master-node:latest" .
-    - docker push "${CI_REGISTRY_IMAGE}-master-node:$CI_COMMIT_REF_NAME"
-    - docker push "${CI_REGISTRY_IMAGE}-master-node:latest"
+    *build_image
   only:
-    - master
+    master
+    dev
 
-build_master_node_dev:
+build_worker_node:
   stage: build_node_image
+  variables:
+    NODE_TYPE: worker-image
+    BUILD_STAGE: node
   script:
-    - cd master-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:dev/' Dockerfile
-    - cd master-node && echo "$PRIV_KEY" > self.pem
-    - cd master-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-master-node:$CI_COMMIT_REF_NAME" .
-    - docker push "${CI_REGISTRY_IMAGE}-master-node:$CI_COMMIT_REF_NAME"
+    *build_image
   only:
-    - dev
-
-build_worker_node_master:
-  stage: build_node_image
-  script:
-    - cd worker-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:master/' Dockerfile
-    - cd worker-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME" .
-    - cd worker-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-worker-node:latest" .
-    - docker push "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME"
-    - docker push "${CI_REGISTRY_IMAGE}-worker-node:latest"
-  only:
-    - master
-
-build_worker_node_dev:
-  stage: build_node_image
-  script:
-    - cd worker-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:dev/' Dockerfile
-    - cd worker-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME" .
-    - docker push "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME"
-  only:
-    - dev
+    master
+    dev
 
