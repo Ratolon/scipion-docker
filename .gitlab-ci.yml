@@ -6,8 +6,12 @@ services:
 before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
+stages:
+  - build_base_image
+  - build_node_image
+
 build_base_image_master:
-  stage: build
+  stage: build_base_image
   script:
     - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME" .
     - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:latest" .
@@ -17,7 +21,7 @@ build_base_image_master:
     - master
 
 build_base_image_dev:
-  stage: build
+  stage: build_base_image
   script:
     - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME" .
     - docker push "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME"
@@ -25,7 +29,7 @@ build_base_image_dev:
     - dev
 
 build_master_node_master:
-  stage: build
+  stage: build_node_image
   script:
     - cd master-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:master/' Dockerfile
     - cd master-node && echo "$PRIV_KEY" > self.pem
@@ -35,11 +39,9 @@ build_master_node_master:
     - docker push "${CI_REGISTRY_IMAGE}-master-node:latest"
   only:
     - master
-  dependencies:
-    - build_base_image_master
 
 build_master_node_dev:
-  stage: build
+  stage: build_node_image
   script:
     - cd master-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:dev/' Dockerfile
     - cd master-node && echo "$PRIV_KEY" > self.pem
@@ -47,11 +49,9 @@ build_master_node_dev:
     - docker push "${CI_REGISTRY_IMAGE}-master-node:$CI_COMMIT_REF_NAME"
   only:
     - dev
-  dependencies:
-    - build_base_image_dev
 
 build_worker_node_master:
-  stage: build
+  stage: build_node_image
   script:
     - cd worker-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:master/' Dockerfile
     - cd worker-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME" .
@@ -60,17 +60,13 @@ build_worker_node_master:
     - docker push "${CI_REGISTRY_IMAGE}-worker-node:latest"
   only:
     - master
-  dependencies:
-    - build_base_image_master
 
 build_worker_node_dev:
-  stage: build
+  stage: build_node_image
   script:
     - cd worker-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:dev/' Dockerfile
     - cd worker-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME" .
     - docker push "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME"
   only:
     - dev
-  dependencies:
-    - build_base_image_dev
 
