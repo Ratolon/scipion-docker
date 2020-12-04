@@ -23,13 +23,13 @@ stages:
     # add priv key for the MN
     # IF "master-image" node image
     - |
-        if [ "${NODE_TYPE}" = "master" ]; then
+        if [ "${NODE_TYPE}" = "master-image" ]; then
             cd master-image
             echo "$PRIV_KEY" > self.pem;
         fi
 
     # build and push the base-image / MN-image / WN-image
-    - cd ${NODE_TYPE} && docker build --pull --cache-from ${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME} -t "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME}" .
+    - ls -la ./ && cd ${NODE_TYPE} && docker build --pull --cache-from ${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME} -t "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME}" .
     - docker push "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME}"
 
     # build and tag the image for master branch also with the string "latest"
