@@ -1,12 +1,5 @@
-# noVNC + TurboVNC + VirtualGL
-# http://novnc.com
-# https://turbovnc.org
-# https://virtualgl.org
 
-#FROM nvidia/cudagl:10.1-runtime-ubuntu18.04
-
-# cannot compile xmipp using "runtime" image
-FROM nvidia/cudagl:10.1-devel-ubuntu18.04
+FROM registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker-base-image:dev
 
 ARG TURBOVNC_VERSION=2.2.4
 ARG VIRTUALGL_VERSION=2.5.2
@@ -17,28 +10,16 @@ ARG NOVNC_VERSION=1.1.0
 ARG S_USER=scipionuser
 ARG S_USER_HOME=/home/${S_USER}
 
-RUN apt update && apt upgrade -y
+USER root
+#######################
 
-RUN apt update && DEBIAN_FRONTEND="noninteractive" apt install -y \
-	tzdata
-
-# Install necessary packages - xfce4, term, editor, ssh
+# Install necessary packages - xfce4, term, editor
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
-	bash \
-	make \
-	curl \
-	wget \
 	dbus-x11 \
 	xfce4 \
 	xauth \
 	xterm \
-	pluma \
-	openssh-client \
-	ca-certificates \
-	bison \
-	flex \
-	git
-# bison, flex, ca-certificates, git ??
+	pluma
 
 # libjpeg-turbo requirements
 RUN apt update && apt install -y --no-install-recommends \
@@ -56,16 +37,6 @@ RUN apt update && apt install -y --no-install-recommends \
 	sudo \
 	mesa-utils \
 	htop
-
-# Required by Scipion
-RUN apt update && apt install -y \
-	libxv1
-	openjdk-8-jdk
-	libfftw3-dev
-	libtiff-dev
-
-# Required by Scipion for conda installation
-RUN apt-get -y install sudo wget gcc g++ libopenmpi-dev mesa-utils openssh-client cmake libnss3 libfontconfig1 libxrender1 libxtst6 xterm libasound2 libglu1 libxcursor1 libdbus-1-3 libxkbcommon-x11-0 libhdf5-dev
 
 # Clean apt
 RUN rm -rf /var/lib/apt/lists/*
@@ -89,11 +60,6 @@ RUN curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz |
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
     cd /opt/websockify && make
 
-# Create scipionuser
-RUN groupadd --gid 1042 ${S_USER} && \
-    useradd --uid 1042 --create-home --home-dir ${S_USER_HOME} -s /bin/bash -g ${S_USER} ${S_USER} && \
-    usermod -aG sudo ${S_USER}
-
 # Create Scipion icon
 RUN mkdir ${S_USER_HOME}/Desktop || true
 ADD res/scipion_logo.png ${S_USER_HOME}/scipion3/
@@ -101,11 +67,7 @@ ADD res/Scipion.desktop ${S_USER_HOME}/Desktop/
 RUN chmod +x ${S_USER_HOME}/scipion3/scipion_logo.png && \
     chmod +x ${S_USER_HOME}/Desktop/Scipion.desktop
 
-RUN chown -R ${S_USER}:${S_USER} ${S_USER_HOME}
-
-ENV CUDA_HOME "/usr/local/cuda"
-#ENV PATH "${CUDA_HOME}/bin:$PATH"
-ENV CUDA_BIN "/usr/local/cuda/bin"
+RUN chown -R ${S_USER}:${S_USER} ${S_USER_HOME}/Desktop
 
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility,display
 
@@ -113,20 +75,9 @@ ENV NVIDIA_DRIVER_CAPABILITIES compute,utility,display
 USER ${S_USER}
 #######################
 
-RUN ["/bin/bash", "-ci", "echo $CUDA_HOME"]
-RUN ["/bin/bash", "-ci", "echo $PATH"]
-
-# Install Scipion
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${S_USER_HOME}/miniconda.sh
-RUN bash ${S_USER_HOME}/miniconda.sh -b
-RUN ${S_USER_HOME}/miniconda3/bin/conda init
-RUN ["/bin/bash", "-ci" , "python -m pip install scipion-installer"]
-RUN ["/bin/bash", "-ci" , "python -m scipioninstaller /home/scipionuser/scipion3 -noAsk -j $(nproc)"]
-
 # Install plugins for Scipion
 COPY plugin-list.txt ${S_USER_HOME}/
 RUN for pl in $(cat ${S_USER_HOME}/plugin-list.txt); do ${S_USER_HOME}/scipion3/scipion3 installp -p $pl -j $(nproc) --noBin; done
-
 
 USER root
 #######################

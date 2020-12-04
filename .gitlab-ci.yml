@@ -6,29 +6,63 @@ services:
 before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-build_master:
+build_base_image_master:
   stage: build
   script:
-    - cd master-node && echo "$PRIV_KEY" > self.pem
-    - cd master-node && docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME" .
-    - cd master-node && docker build --pull -t "$CI_REGISTRY_IMAGE:latest" .
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
-    - docker push "$CI_REGISTRY_IMAGE:latest"
+    - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME" .
+    - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:latest" .
+    - docker push "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME"
+    - docker push "${CI_REGISTRY_IMAGE}-base-image:latest"
   only:
     - master
 
-build_dev:
+build_base_image_dev:
   stage: build
   script:
-    - cd master-node && docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME" .
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
+    - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME" .
+    - docker push "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME"
   only:
     - dev
 
-      #test:
-      #  stage: test
-  #  script:
-  #    - ssh -o StrictHostKeyChecking=no ${USER}@${TARGET} "docker run --privileged -d --name=gitlab-test -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -e USE_DISPLAY="1" --rm -p 5901:5901 --mount src=scipion-plugins,dst=/opt/scipion/software/em registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker:$CI_COMMIT_REF_NAME"
-  #    - sleep 180
-  #    - curl --insecure https://${TARGET}:5901 > /dev/null
-  #    - ssh -o StrictHostKeyChecking=no ${USER}@${TARGET} "docker kill gitlab-test"
+build_master_node_master:
+  stage: build
+  script:
+    - cd master-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:master/' Dockerfile
+    - cd master-node && echo "$PRIV_KEY" > self.pem
+    - cd master-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-master-node:$CI_COMMIT_REF_NAME" .
+    - cd master-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-master-node:latest" .
+    - docker push "${CI_REGISTRY_IMAGE}-master-node:$CI_COMMIT_REF_NAME"
+    - docker push "${CI_REGISTRY_IMAGE}-master-node:latest"
+  only:
+    - master
+
+build_master_node_dev:
+  stage: build
+  script:
+    - cd master-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:dev/' Dockerfile
+    - cd master-node && echo "$PRIV_KEY" > self.pem
+    - cd master-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-master-node:$CI_COMMIT_REF_NAME" .
+    - docker push "${CI_REGISTRY_IMAGE}-master-node:$CI_COMMIT_REF_NAME"
+  only:
+    - dev
+
+build_worker_node_master:
+  stage: build
+  script:
+    - cd worker-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:master/' Dockerfile
+    - cd worker-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME" .
+    - cd worker-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-worker-node:latest" .
+    - docker push "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME"
+    - docker push "${CI_REGISTRY_IMAGE}-worker-node:latest"
+  only:
+    - master
+
+build_worker_node_dev:
+  stage: build
+  script:
+    - cd worker-node && sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:dev/' Dockerfile
+    - cd worker-node && docker build --pull -t "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME" .
+    - docker push "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME"
+  only:
+    - dev
+

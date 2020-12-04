@@ -14,8 +14,6 @@ export DISPLAY=:${USE_DISPLAY}
 echo $WEBPORT
 echo $DISPLAY
 
-conda config --set auto_activate_base false
-
 mkdir $S_USER_HOME/.vnc
 echo $MYVNCPASSWORD
 echo $MYVNCPASSWORD | vncpasswd -f > $S_USER_HOME/.vnc/passwd
