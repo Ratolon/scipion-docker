@@ -16,28 +16,25 @@ stages:
     # IF "node" build stage
     - |
         if [ "${BUILD_STAGE}" = "node" ]; then
-            cd ${CI_BUILDS_DIR}/${NODE_TYPE}
-            sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:${CI_COMMIT_REF_NAME}/' Dockerfile
+            sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:${CI_COMMIT_REF_NAME}/' ${NODE_TYPE}/Dockerfile
         fi
 
     # add priv key for the MN
     # IF "master-image" node image
     - |
         if [ "${NODE_TYPE}" = "master-image" ]; then
-            cd ${CI_BUILDS_DIR}/master-image
-            echo "$PRIV_KEY" > self.pem;
+            echo "$PRIV_KEY" > master-image/self.pem;
         fi
 
     # build and push the base-image / MN-image / WN-image
-    - cd ${CI_BUILDS_DIR}/${NODE_TYPE} && docker build --pull --cache-from ${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME} -t "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME}" .
+    - docker build --pull --cache-from ${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME} -t "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME}" ${NODE_TYPE}/.
     - docker push "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:${CI_COMMIT_REF_NAME}"
 
     # build and tag the image for master branch also with the string "latest"
     # IF "master" branch
     - |
         if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then
-            cd ${CI_BUILDS_DIR}/${NODE_TYPE}
-            docker build --pull -t "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:latest" .
+            docker build --pull -t "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:latest" ${NODE_TYPE}/.
             docker push "${CI_REGISTRY_IMAGE}/${NODE_TYPE}:latest"
         fi
 
