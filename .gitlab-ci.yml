@@ -15,6 +15,7 @@ build_base_image_master:
   script:
     - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME" .
     - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:latest" .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME"
     - docker push "${CI_REGISTRY_IMAGE}-base-image:latest"
   only:
@@ -24,6 +25,7 @@ build_base_image_dev:
   stage: build_base_image
   script:
     - cd base-image && docker build --pull -t "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME" .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push "${CI_REGISTRY_IMAGE}-base-image:$CI_COMMIT_REF_NAME"
   only:
     - dev
