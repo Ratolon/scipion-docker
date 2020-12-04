@@ -35,6 +35,8 @@ build_master_node_master:
     - docker push "${CI_REGISTRY_IMAGE}-master-node:latest"
   only:
     - master
+  dependencies:
+    - build_base_image_master
 
 build_master_node_dev:
   stage: build
@@ -45,6 +47,8 @@ build_master_node_dev:
     - docker push "${CI_REGISTRY_IMAGE}-master-node:$CI_COMMIT_REF_NAME"
   only:
     - dev
+  dependencies:
+    - build_base_image_dev
 
 build_worker_node_master:
   stage: build
@@ -56,6 +60,8 @@ build_worker_node_master:
     - docker push "${CI_REGISTRY_IMAGE}-worker-node:latest"
   only:
     - master
+  dependencies:
+    - build_base_image_master
 
 build_worker_node_dev:
   stage: build
@@ -65,4 +71,6 @@ build_worker_node_dev:
     - docker push "${CI_REGISTRY_IMAGE}-worker-node:$CI_COMMIT_REF_NAME"
   only:
     - dev
+  dependencies:
+    - build_base_image_dev
 
