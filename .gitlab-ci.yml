@@ -11,7 +11,7 @@ stages:
   - build_node_image
 
 .build_image:
-  script: &build_node_image
+  script: &build_image
     # replace tag for a base image with branch name
     # IF "node" build stage
     - |
@@ -49,10 +49,10 @@ build_base_image:
   script:
     *build_image
   only:
-    master
-    dev
+    - master
+    - dev
 
-build_master_node:
+build_master_image:
   stage: build_node_image
   variables:
     NODE_TYPE: master-image
@@ -60,10 +60,10 @@ build_master_node:
   script:
     *build_image
   only:
-    master
-    dev
+    - master
+    - dev
 
-build_worker_node:
+build_worker_image:
   stage: build_node_image
   variables:
     NODE_TYPE: worker-image
@@ -71,6 +71,6 @@ build_worker_node:
   script:
     *build_image
   only:
-    master
-    dev
+    - master
+    - dev
 
