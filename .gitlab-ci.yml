@@ -16,7 +16,7 @@ stages:
     # IF "node" build stage
     - |
         if [ "${BUILD_STAGE}" = "node" ]; then
-            sed -i -E 's/^FROM\s+(.+):.+$/FROM \1:${CI_COMMIT_REF_NAME}/' ${NODE_TYPE}/Dockerfile
+            sed -i -E "s/^FROM\s+(.+):.+$/FROM \1:${CI_COMMIT_REF_NAME}/" ${NODE_TYPE}/Dockerfile
         fi
 
     # add priv key for the MN
