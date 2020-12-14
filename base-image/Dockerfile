@@ -69,6 +69,9 @@ RUN ${S_USER_HOME}/miniconda3/bin/conda init
 RUN ["/bin/bash", "-ci" , "python -m pip install scipion-installer"]
 RUN ["/bin/bash", "-ci" , "python -m scipioninstaller /home/scipionuser/scipion3 -noAsk -j $(nproc)"]
 
+# data directory for mount NFS using docker volume
+RUN mkdir /home/scipionuser/data
+
 # Disable conda auto activation
 RUN ${S_USER_HOME}/miniconda3/bin/conda config --set auto_activate_base false
 
