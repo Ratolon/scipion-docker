@@ -73,6 +73,8 @@ topology_template:
         Standard:
           configure:
             implementation: https://gitlab.ics.muni.cz/eosc-synergy/im-topology/-/raw/test/ansible.yaml
+            inputs:
+              vnc_pass: { get_input: vnc_pass }
 
 #      requirements:
 #        - host: lrms_server
