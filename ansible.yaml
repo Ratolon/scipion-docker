@@ -2,7 +2,6 @@
 - vars:
 
 # --- Please change the VNC password ---
-    vnc_pass: {{ vnc_pass }}
     docker_runtime: |
       {
         "mtu": 1442,
