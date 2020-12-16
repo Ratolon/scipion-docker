@@ -38,6 +38,10 @@ RUN apt update && apt install -y --no-install-recommends \
 	mesa-utils \
 	htop
 
+# Install slurm
+RUN apt update && apt install -y --no-install-recommends \
+	slurm-client
+
 # Clean apt
 RUN rm -rf /var/lib/apt/lists/*
 

@@ -24,6 +24,7 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
 	wget \
 	openssh-client \
 	ca-certificates \
+	python3 \
 	bison \
 	flex \
 	git
@@ -62,15 +63,16 @@ USER ${S_USER}
 RUN ["/bin/bash", "-ci", "echo $CUDA_HOME"]
 RUN ["/bin/bash", "-ci", "echo $PATH"]
 
+
 # Install Scipion
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${S_USER_HOME}/miniconda.sh
 RUN bash ${S_USER_HOME}/miniconda.sh -b
 RUN ${S_USER_HOME}/miniconda3/bin/conda init
-RUN ["/bin/bash", "-ci" , "python -m pip install scipion-installer"]
-RUN ["/bin/bash", "-ci" , "python -m scipioninstaller /home/scipionuser/scipion3 -noAsk -j $(nproc)"]
+RUN ["/bin/bash", "-ci" , "python3 -m pip install scipion-installer"]
+RUN ["/bin/bash", "-ci" , "cd ${S_USER_HOME} && python3 -m scipioninstaller ${S_USER_HOME}/scipion3 -noAsk -j $(nproc)"]
 
 # data directory for mount NFS using docker volume
-RUN mkdir /home/scipionuser/data
+RUN mkdir ${S_USER_HOME}/ScipionUserData
 
 # Disable conda auto activation
 RUN ${S_USER_HOME}/miniconda3/bin/conda config --set auto_activate_base false
