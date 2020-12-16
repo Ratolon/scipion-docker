@@ -1,0 +1,84 @@
+
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+imports:
+  - ec3_custom_types: https://raw.githubusercontent.com/grycap/ec3/tosca/tosca/custom_types.yaml
+  - indigo_custom_types: https://raw.githubusercontent.com/indigo-dc/tosca-types/master/custom_types.yaml
+
+description: >
+  Launch a master node with Scipion via VNC
+metadata:
+  display_name: TEST - Scipion on SLURM cluster
+#  icon: images/slurm.png
+
+topology_template:
+  inputs:
+    vnc_pass:
+      type: string
+      description: VNC password
+      required: yes
+    description:
+      type: string
+      description: Description
+      required: yes
+
+  node_templates:
+#    lrms_front_end:
+#      type: tosca.nodes.indigo.LRMS.FrontEnd.Slurm
+#      capabilities:
+#        endpoint:
+#          properties:
+#            ports:
+#              vnc_port:
+#                protocol: tcp
+#                source: 5904
+#      properties:
+#        wn_ips: { get_attribute: [ lrms_wn, private_address ] }
+
+
+    scipion_front_end:
+      type: tosca.nodes.indigo.Compute
+#      type: tosca.nodes.Compute
+      capabilities:
+#        scalable:
+#          properties:
+#            count: { get_input: wn_num }
+        endpoint:
+          properties:
+            network_name: PUBLIC
+            ports:
+              ssh_port:
+                protocol: tcp
+                source: 22
+              vnc_port:
+                protocol: tcp
+                source: 5904
+        host:
+          properties:
+            #num_cpus: 8
+            #mem_size: 64 GB
+            # instance_type requires tosca.nodes.indigo.Compute
+            instance_type: 'hpc.8core-64ram-nvidia-1080-glados'
+        os:
+          properties:
+#            image: 'one://onecloud.i3m.upv.es/847'
+            image: 'ost://identity.cloud.muni.cz/be43a104-f338-4045-b0b8-c407e2e5d0d0'
+            type: linux
+#            distribution: debian
+#            version: 10
+#      properties:
+#        wn_ips: { get_attribute: [ lrms_wn, private_address ] }
+#        nvidia_support: true
+      interfaces:
+        Standard:
+          configure:
+            implementation: https://gitlab.ics.muni.cz/eosc-synergy/im-topology/-/raw/test/ansible.yaml
+
+#      requirements:
+#        - host: lrms_server
+
+#  outputs:
+#    cluster_ip:
+#      value: { get_attribute: [ lrms_server, public_address, 0 ] }
+#    cluster_creds:
+#      value: { get_attribute: [ lrms_server, endpoint, credential, 0 ] }
