@@ -1,0 +1,7 @@
+scipion-em-eman2
+scipion-em-xmipp
+scipion-em-gctf
+scipion-em-gautomatch
+scipion-em-motioncorr
+scipion-em-relion
+scipion-em-cistem
