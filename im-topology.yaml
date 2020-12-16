@@ -72,7 +72,7 @@ topology_template:
       interfaces:
         Standard:
           configure:
-            implementation: https://gitlab.ics.muni.cz/eosc-synergy/im-topology/-/raw/test/ansible.yaml
+            implementation: https://gitlab.ics.muni.cz/eosc-synergy/scipion-docker/-/raw/dev/ansible.yaml
             inputs:
               vnc_pass: { get_input: vnc_pass }
 
