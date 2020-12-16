@@ -1,16 +1,51 @@
 # Scipion-docker
 
-## Prerequisites (ubuntu packages)
+## Deploy Scipion using IM
+### 1. Go to IM-web and log in with your account
+### 2. Make sure you have access to the desired platform
+You can open a list your **Crendentials** on the left menu.
+If necessary, add a new one by clicking the "Add +" button and entering correct information.
 
+### 3. Paste the RADL/TOSCA recipe into the new IM topology
+
+Click the **Topologies** button in the left menu and the **Add +** button at the top.
+
+Paste the RADL/TOSCA recipe from the **im-topology.yml** file and save the topology.
+
+**Please change default password for VNC at the beginning of the Ansible section!**
+
+You can edit the recipe if needed.
+More info about the IM: https://imdocs.readthedocs.io/en/latest/intro.html
+
+### 4. Launch your topology
+
+In the list of topologies launch the one you just created.
+You will be redirected to the **Infrastructures** section on the page.
+Wait for the **configured** status of the topology.
+
+### 5. Connect to the application
+
+Open info about the VM (**VM IDs** link in a table) and copy the public IP address.
+
+Go to the following link:
+
+    https://paste_the_address:5904
+
+Log in using your password and enjoy working with the Scipion.
+
+![IM - VM info](docs/im-infrastructures-vm-info.png)
+![IM - VM address](docs/im-infrastructures-vm-address.png)
+
+
+## Prepare Master node manually
+### Prerequisites (ubuntu packages)
 * nvidia drivers
 * docker with nVidia runtime
 * X11 server running
 * **xserver-xorg xdm xauth nvidia-container-toolkit nvidia-container-runtime nvidia-docker2**
 
-## Headless machines
-
-### Configure xdm
-
+### Headless machines
+#### Configure xdm
 When running on headless machine (or a machine where nobody is playing FPS games all the time), 
 make sure the X server accepts unauthenticated local connections even when a user session is not running. 
 E.g., the /etc/X11/xdm/xdm-config file should contain:
@@ -19,7 +54,7 @@ E.g., the /etc/X11/xdm/xdm-config file should contain:
 
 However, such settings can be dangerous if the machine is not dedicated for this purpos, check for possible side effects.
 
-### Configure xorg
+#### Configure xorg
 <!-- https://virtualgl.org/Documentation/HeadlessNV -->
 
 **1. Run `nvidia-xconfig --query-gpu-info` to obtain the bus ID of the GPU. Example:**
@@ -50,9 +85,9 @@ Option "HardDPMS" "false"
 ```
 under the Device or Screen section.
 
-## Installation of prerequisites
+### Installation of prerequisites
 
-### nVidia runtime
+#### nVidia runtime
 
 **Installation**
 
@@ -82,32 +117,15 @@ https://github.com/NVIDIA/nvidia-docker/wiki/Advanced-topics#default-runtime
 If you need **runc** as a default runtime for some purpose, do not change this runtime.
 Note that you will now need to start the docker image with "**--runtime=nvidia**".
 
-## Run a container
+### Run a container
 
-### Re-pull the images before running the containers
+#### Re-pull the images before running the containers
 ```bash
-docker pull registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker-plugin-volume:latest
 docker pull registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker:latest
 ```
 
-### Prepare volume with plugins
 
-If you want to use plugins, you can create a volume with them.
-For this purpose a special image is created that extract the data into the volume. https://gitlab.ics.muni.cz/eosc-synergy/scipion-docker-plugin-volume
-
-Create an empty volume:
-```bash
-docker volume create scipion-plugins
-```
-
-Extract plugin data into the volume:
-```bash
-docker run --rm --mount src=scipion-plugins,dst=/volume registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker-plugin-volume:latest
-```
-
-Wait for the action to complete and run the scipion image.
-
-### Run
+#### Run
 
 ```
 docker run --privileged -d --rm -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="abc" -e USER_PASS="abc" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 --mount src=scipion-plugins,dst=/opt/scipion/software/em registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker:latest
@@ -122,7 +140,7 @@ This is also related to the port. Change last digit of the ports "**-p 5905:5905
 
 In addition, if you are using default docker runtime, you have to run the container with "**--runtime=nvidia**" parameter.
 
-## Basic test
+### Basic test
 
 Your instance should be available on the link: "**https://your-adress:5905**".
 
