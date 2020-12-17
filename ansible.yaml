@@ -2,6 +2,7 @@
 - vars:
 
 # --- Please change the VNC password ---
+    scipion_user: scipionuser
     docker_runtime: |
       {
         "mtu": 1442,
@@ -191,10 +192,16 @@
       path: /tmp/.X11-unix
       state: absent
 
-  - name: Create scipionuser user
+  - name: Create {{ scipion_user }} user
     user:
-      name: scipionuser
+      name: {{ scipion_user }}
       uid: 1042
+  - name: Create ScipionUserData dir
+    file:
+      path: /home/{{ scipion_user }}/ScipionUserData
+      owner: {{ scipion_user }}
+      group: {{ scipion_user }}
+      state: directory
 
   - name: Restart display-manager
     service:

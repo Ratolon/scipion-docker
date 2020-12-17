@@ -21,6 +21,10 @@ topology_template:
       type: string
       description: Description
       required: yes
+    project_local_location:
+      type: string
+      description: Local path where existing Scipion project exists
+      required: no
 
   node_templates:
 #    lrms_front_end:
