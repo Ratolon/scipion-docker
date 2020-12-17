@@ -40,7 +40,10 @@ RUN apt update && apt install -y --no-install-recommends \
 
 # Install slurm
 RUN apt update && apt install -y --no-install-recommends \
-	slurm-client
+	slurm-client \
+	libmunge2 \
+	munge \
+	libmunge-dev
 
 # Clean apt
 RUN rm -rf /var/lib/apt/lists/*

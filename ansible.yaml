@@ -204,6 +204,25 @@
       group: "{{ scipion_user }}"
       state: directory
 
+  - name: Download SLURM package
+    get_url:
+      url: http://ftpgrycap.i3m.upv.es/src/slurm-20.02.6.tar.bz2
+      dest: /tmp/slurm.tar.bz2
+  - name: Decompress SLURM package
+    command: tar xjf slurm.tar.bz2
+      chdir: /tmp
+      creates: /tmp/slurm-20.02.6
+  - name: Configure SLURM
+    command: ./configure
+      chdir: /tmp/slurm-20.02.6
+      creates: /tmp/slurm-20.02.6/config.log
+  - name: Compile (make) SLURM
+    command: make
+      chdir: /tmp/slurm-20.02.6
+  - name: Install SLURM
+    command: make install
+      chdir: /tmp/slurm-20.02.6
+
   - name: Restart display-manager
     service:
       name: display-manager
