@@ -3,6 +3,7 @@
 
 # --- Please change the VNC password ---
     scipion_user: scipionuser
+    vnc_pass: abc
     docker_runtime: |
       {
         "mtu": 1442,

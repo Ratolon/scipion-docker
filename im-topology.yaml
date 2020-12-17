@@ -40,7 +40,7 @@ topology_template:
 #        wn_ips: { get_attribute: [ lrms_wn, private_address ] }
 
 
-    scipion_front_end:
+    master_node:
       type: tosca.nodes.indigo.Compute
 #      type: tosca.nodes.Compute
       capabilities:
@@ -68,11 +68,13 @@ topology_template:
 #            image: 'one://onecloud.i3m.upv.es/847'
             image: 'ost://identity.cloud.muni.cz/be43a104-f338-4045-b0b8-c407e2e5d0d0'
             type: linux
+
 #            distribution: debian
 #            version: 10
 #      properties:
 #        wn_ips: { get_attribute: [ lrms_wn, private_address ] }
 #        nvidia_support: true
+
       interfaces:
         Standard:
           configure:
@@ -83,8 +85,7 @@ topology_template:
 #      requirements:
 #        - host: lrms_server
 
-#  outputs:
-#    cluster_ip:
-#      value: { get_attribute: [ lrms_server, public_address, 0 ] }
-#    cluster_creds:
-#      value: { get_attribute: [ lrms_server, endpoint, credential, 0 ] }
+  outputs:
+    master_node_ip:
+      value: { concat: [ 'https://', get_attribute: [ master_node, public_address, 0 ], ':5904/?resize=remote' ] }
+
