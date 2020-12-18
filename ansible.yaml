@@ -117,8 +117,11 @@
   - name: Get release name
     shell: lsb_release -cs
     register: release_name
+  - name: Get os name
+    shell: . /etc/os-release; echo $ID
+    register: os_name
   - name: Add docker registry
-    apt_repository: repo='deb [arch=amd64] https://download.docker.com/linux/debian {{ release_name.stdout }} stable' state=present
+    apt_repository: repo='deb [arch=amd64] https://download.docker.com/linux/{{ os_name.stdout }} {{ release_name.stdout }} stable' state=present
 
 # It causes the nvidia driver does not work after reboot
 #  - name: Update and upgrade all packages
