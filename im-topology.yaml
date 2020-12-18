@@ -66,7 +66,10 @@ topology_template:
         os:
           properties:
 #            image: 'one://onecloud.i3m.upv.es/847'
-            image: 'ost://identity.cloud.muni.cz/be43a104-f338-4045-b0b8-c407e2e5d0d0'
+# debian-10-x86_64_gpu     be43a104-f338-4045-b0b8-c407e2e5d0d0 
+# debian-10-x86_64         bbe44bf3-b504-4a63-94f0-e51a69d9b7ba
+# ubuntu-bionic-x86_64_gpu 6e60eb4a-aeae-400a-927c-e3643d827601
+            image: 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601'
             type: linux
 
 #            distribution: debian

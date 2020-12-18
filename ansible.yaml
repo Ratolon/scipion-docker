@@ -4,6 +4,7 @@
 # --- Please change the VNC password ---
     scipion_user: scipionuser
     vnc_pass: abc
+    slurm_version: 20.02.6
     docker_runtime: |
       {
         "mtu": 1442,
@@ -62,7 +63,7 @@
       name: ['linux-source', 'linux-image-{{ uname_r.stdout }}', 'linux-headers-{{ uname_r.stdout }}']
       state: present
   - name: Install drivers
-    shell: /opt/cloudadm/NVIDIA-Linux-x86_64-450.66.run --dkms --silent
+    shell: /opt/cloudadm/NVIDIA-Linux-x86_64-450.66.run --silent
 
 # Install nvidia driver - 2nd option
 #  - name: Install required packages for nvidia driver
@@ -206,26 +207,26 @@
 
   - name: Download SLURM package
     get_url:
-      url: http://ftpgrycap.i3m.upv.es/src/slurm-20.02.6.tar.bz2
+      url: "http://ftpgrycap.i3m.upv.es/src/slurm-{{ slurm_version }}.tar.bz2"
       dest: /tmp/slurm.tar.bz2
   - name: Decompress SLURM package
     command:
       cmd: tar xjf slurm.tar.bz2
       chdir: /tmp
-      creates: /tmp/slurm-20.02.6
+      creates: "/tmp/slurm-{{ slurm_version }}"
   - name: Configure SLURM
     command:
       cmd: ./configure
-      chdir: /tmp/slurm-20.02.6
-      creates: /tmp/slurm-20.02.6/config.log
+      chdir: "/tmp/slurm-{{ slurm_version }}"
+      creates: "/tmp/slurm-{{ slurm_version }}/config.log"
   - name: Compile (make) SLURM
     command:
       cmd: make
-      chdir: /tmp/slurm-20.02.6
+      chdir: "/tmp/slurm-{{ slurm_version }}"
   - name: Install SLURM
     command:
       cmd: make install
-      chdir: /tmp/slurm-20.02.6
+      chdir: "/tmp/slurm-{{ slurm_version }}"
 
   - name: Restart display-manager
     service:
@@ -235,6 +236,7 @@
     service:
       name: docker
       state: restarted
+
   - name: Pull master node image
     docker_image:
       name: registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker/master-image:latest
