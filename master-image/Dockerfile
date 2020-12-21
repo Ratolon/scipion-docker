@@ -7,6 +7,8 @@ ARG LIBJPEG_VERSION=1.5.2
 ARG WEBSOCKIFY_VERSION=0.8.0
 ARG NOVNC_VERSION=1.1.0
 
+ARG SLURM_VERSION=20.02.6
+
 ARG S_USER=scipionuser
 ARG S_USER_HOME=/home/${S_USER}
 
@@ -39,11 +41,21 @@ RUN apt update && apt install -y --no-install-recommends \
 	htop
 
 # Install slurm
+#RUN apt update && apt install -y --no-install-recommends \
+#        slurm-client \
+#        libmunge2 \
+#        munge \
+#        libmunge-dev
+
+# Slurm requirements
 RUN apt update && apt install -y --no-install-recommends \
-	slurm-client \
-	libmunge2 \
-	munge \
-	libmunge-dev
+        libmunge2 \
+        libpq5 \
+        munge \
+        libmunge-dev \
+        gcc \
+        make \
+        bzip2
 
 # Clean apt
 RUN rm -rf /var/lib/apt/lists/*
@@ -66,6 +78,15 @@ RUN curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz |
     mv /opt/websockify-${WEBSOCKIFY_VERSION} /opt/websockify && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
     cd /opt/websockify && make
+
+# Install Slurm client
+RUN cd /tmp && \
+    curl -fsSL -o slurm.tar.bz2 http://ftpgrycap.i3m.upv.es/src/slurm-${SLURM_VERSION}.tar.bz2 && \
+    tar -xjf slurm.tar.bz2 && \
+    cd slurm-${SLURM_VERSION} && \
+    ./configure && \
+    make && \
+    make install
 
 # Create Scipion icon
 RUN mkdir ${S_USER_HOME}/Desktop || true
