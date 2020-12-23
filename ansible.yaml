@@ -3,7 +3,7 @@
 
 # --- Please change the VNC password ---
     scipion_user: scipionuser
-    vnc_pass: abc
+#    vnc_pass: abc
     slurm_version: 20.02.6
     docker_runtime: |
       {
