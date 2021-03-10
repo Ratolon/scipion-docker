@@ -29,9 +29,9 @@
 #    reboot:
 #      reboot_timeout: 300
   - name: Create {{ scipion_user }} user
-      user:
-        name: "{{ scipion_user }}"
-        uid: 1042
+    user:
+      name: "{{ scipion_user }}"
+      uid: 1042
 
   - name: Create ScipionUserData dir
     file:
