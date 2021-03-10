@@ -78,9 +78,9 @@
       name: docker
 
   - name: Set mtu value to docker network
-      copy:
-        content: "{{ docker_runtime }}"
-        dest: /etc/docker/daemon.json
+    copy:
+      content: "{{ docker_runtime }}"
+      dest: /etc/docker/daemon.json
 
   - name: Add user to docker group and change shell
     shell: usermod --shell /bin/bash -aG docker cloudadm
