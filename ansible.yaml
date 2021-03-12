@@ -46,7 +46,7 @@
       state: present
       update_cache: yes
 
-- name: Add NVIDIA PPA
+  - name: Add NVIDIA PPA
     apt_repository:
       repo: ppa:graphics-drivers/ppa
       update_cache: yes
