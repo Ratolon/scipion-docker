@@ -55,8 +55,8 @@
     apt:
       name: ['nvidia-driver-440', 'nvidia-cuda-dev']
 
-  - name: Reboot server
-    reboot:
+#  - name: Reboot server
+#    reboot:
 
   - name: Add docker GPG key
     apt_key:
