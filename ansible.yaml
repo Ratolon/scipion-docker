@@ -46,6 +46,18 @@
       state: present
       update_cache: yes
 
+- name: Add NVIDIA PPA
+    apt_repository:
+      repo: ppa:graphics-drivers/ppa
+      update_cache: yes
+
+  - name: Install nvidia-driver package
+    apt:
+      name: ['nvidia-driver-440', 'nvidia-cuda-dev']
+
+  - name: Reboot server
+    reboot:
+
   - name: Add docker GPG key
     apt_key:
       url: https://download.docker.com/linux/ubuntu/gpg
