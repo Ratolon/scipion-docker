@@ -23,7 +23,8 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
 	xauth \
 	xterm \
 	konsole \
-	pluma
+	pluma \
+	firefox
 
 # libjpeg-turbo requirements
 RUN apt update && apt install -y --no-install-recommends \
@@ -40,14 +41,8 @@ RUN apt update && apt install -y --no-install-recommends \
 	vim \
 	sudo \
 	mesa-utils \
-	htop
-
-# Install slurm
-#RUN apt update && apt install -y --no-install-recommends \
-#        slurm-client \
-#        libmunge2 \
-#        munge \
-#        libmunge-dev
+	htop \
+	iputils-ping
 
 # Slurm requirements
 RUN apt update && apt install -y --no-install-recommends \
@@ -110,6 +105,7 @@ USER ${S_USER}
 # Install plugins for Scipion
 COPY plugin-list.txt ${S_USER_HOME}/
 RUN for pl in $(cat ${S_USER_HOME}/plugin-list.txt); do ${S_USER_HOME}/scipion3/scipion3 installp -p $pl -j $(nproc) --noBin; done
+RUN  rm ${S_USER_HOME}/scipion3/software/em/*gz
 
 COPY hosts.conf ${S_USER_HOME}/scipion3/config/
 
@@ -146,7 +142,7 @@ ENV EDITOR=/usr/bin/pluma
 
 COPY self.pem /
 
-COPY plugin-list.txt ${S_USER_HOME}/
+#COPY plugin-list.txt ${S_USER_HOME}/
 
 # run docker-entrypoint.sh
 COPY docker-entrypoint-root.sh /
