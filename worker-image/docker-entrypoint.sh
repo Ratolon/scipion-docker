@@ -4,13 +4,17 @@ set -xe
 
 S_USER=scipionuser
 S_USER_HOME=/home/${S_USER}
-CRYOS_LICENSE_ID=a3dc0cc0-3181-11ea-84d0-8b3771c7f13b
+
+ln -s ${S_USER_HOME}/ScipionUserData/data ${S_USER_HOME}/scipion3/data
+
+chown $S_USER:$S_USER $S_USER_HOME/scipion3/software/em
+chown -R $S_USER:$S_USER $S_USER_HOME/.config
+chown -R $S_USER:$S_USER $S_USER_HOME/ScipionUserData
 
 # Update cryosparc hostnames
-su - $S_USER
-sed -i -e 's+CRYOSPARC_MASTER_HOSTNAME=.*+CRYOSPARC_MASTER_HOSTNAME="$HOSTNAME"+g' $S_USER_HOME/cryosparc3/cryosparc_master/config.sh
-$S_USER_HOME/cryosparc3/cryosparc_master/bin/cryosparcm start
+sed -i -e "s+CRYOSPARC_MASTER_HOSTNAME=.*+CRYOSPARC_MASTER_HOSTNAME=\"$HOSTNAME\"+g" $S_USER_HOME/cryosparc3/cryosparc_master/config.sh
+sudo -u $S_USER $S_USER_HOME/cryosparc3/cryosparc_master/bin/cryosparcm start
 cd $S_USER_HOME/cryosparc3/cryosparc_worker
-./bin/cryosparcw connect --master localhost --port 39000 --worker $HOSTNAME --nossd
+sudo -u $S_USER ./bin/cryosparcw connect --master localhost --port 39000 --worker $HOSTNAME --nossd
 
-exec "$@"
+sudo -H -u $S_USER "$@"

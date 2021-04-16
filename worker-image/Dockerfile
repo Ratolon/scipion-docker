@@ -13,6 +13,7 @@ RUN apt update && apt install -y --no-install-recommends python bash iputils-pin
 USER ${S_USER}
 
 # Install plugins for Scipion
+COPY plugin-list.txt ${S_USER_HOME}/
 RUN for pl in $(cat ${S_USER_HOME}/plugin-list.txt); do ${S_USER_HOME}/scipion3/scipion3 installp -p $pl -j $(nproc); done
 RUN  rm ${S_USER_HOME}/scipion3/software/em/*gz
 
@@ -37,6 +38,7 @@ RUN ${S_USER_HOME}/scipion3/scipion3 installb deepLearningToolkit -j $(nproc)
 # Modify MOTIONCOR2_BIN variable to point to cuda10.2 binary
 RUN echo MOTIONCOR2_BIN=${S_USER_HOME}/software/em/motioncor2-1.4.0/bin/MotionCor2_1.4.0_Cuda102 >> ${S_USER_HOME}/scipion3/config/scipion.conf
 
+USER root
 # run docker-entrypoint.sh
 COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
