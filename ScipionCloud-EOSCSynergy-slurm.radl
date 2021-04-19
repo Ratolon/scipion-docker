@@ -6,14 +6,13 @@ net_interface.1.connection = 'publica' and
 net_interface.0.connection = 'privada' and
 net_interface.0.dns_name = 'scipion-master' and
 instance_type = 'm1.medium' and #IISAS
-#instance_type = 'hpc.8core-64ram-nvidia-1080-glados' and #CESNET
 #instance_type = 'standard.medium' and #CESNET
 #instance_type = 'cm4.large' and #IFCA
 net_interface.0.dns_name = 'scipion-master' and
 disk.0.os.name='linux' and
 #disk.0.image.url = 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' and
-#disk.0.image.url = 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601' and
-disk.0.image.url = 'ost://keystone3.ui.savba.sk:5000/89c0c57d-464f-4376-91cf-45d43ff82787' and
+#disk.0.image.url = 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8' and
+disk.0.image.url = 'ost://keystone3.ui.savba.sk:5000/7302713e-0c2e-46d5-90dc-0fde5a7de347' and
 disk.0.applications contains (name='ansible.modules.grycap.slurm') and
 disk.0.applications contains (name='ansible.modules.indigo-dc.nfs') and
 
@@ -33,9 +32,9 @@ instance_type = 'gpu1cpu6' and #IISAS
 net_interface.0.connection = 'privada' and
 net_interface.0.dns_name = 'scipion-wn-#N#' and
 disk.0.os.name='linux' and
-#disk.0.image.url = 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601'
+#disk.0.image.url = 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8'
 #disk.0.image.url = 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520'
-disk.0.image.url = 'ost://keystone3.ui.savba.sk:5000/89c0c57d-464f-4376-91cf-45d43ff82787'
+disk.0.image.url = 'ost://keystone3.ui.savba.sk:5000/7302713e-0c2e-46d5-90dc-0fde5a7de347'
 )
 
 configure wn (
