@@ -9,6 +9,10 @@ ln -s ${S_USER_HOME}/ScipionUserData/data ${S_USER_HOME}/scipion3/data
 
 export PATH="/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/VirtualGL/bin:/opt/TurboVNC/bin"
 
+# Update cryosparc hostnames
+sed -i -e "s+CRYOSPARC_MASTER_HOSTNAME=.*+CRYOSPARC_MASTER_HOSTNAME=\"$HOSTNAME\"+g" $S_USER_HOME/cryosparc3/cryosparc_master/config.sh
+sudo -u $S_USER $S_USER_HOME/cryosparc3/cryosparc_master/bin/cryosparcm start
+
 echo $USE_DISPLAY
 export WEBPORT=590${USE_DISPLAY}
 export DISPLAY=:${USE_DISPLAY}

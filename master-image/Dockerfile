@@ -9,9 +9,11 @@ ARG WEBSOCKIFY_VERSION=0.8.0
 ARG NOVNC_VERSION=1.1.0
 
 ARG SLURM_VERSION=20.02.6
+ARG CRYOSPARC_VERSION=3.1.0
 
 ARG S_USER=scipionuser
 ARG S_USER_HOME=/home/${S_USER}
+ARG CRYOS_LICENSE_ID=a3dc0cc0-3181-11ea-84d0-8b3771c7f13b
 
 USER root
 #######################
@@ -112,6 +114,19 @@ COPY hosts.conf ${S_USER_HOME}/scipion3/config/
 # This is needed since we do not have binaries installed in master docker
 RUN mkdir ${S_USER_HOME}/scipion3/software/em/gctf-1.18
 RUN mkdir ${S_USER_HOME}/scipion3/software/em/motioncor2-1.4.0
+
+# Install cryosparc master
+USER ${S_USER}
+RUN mkdir ${S_USER_HOME}/cryosparc3
+RUN curl -L https://get.cryosparc.com/download/master-v${CRYOSPARC_VERSION}/${CRYOS_LICENSE_ID} -o ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz
+RUN tar -xf ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz -C ${S_USER_HOME}/cryosparc3
+RUN rm ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz
+COPY install_cryosparc_master.sh ${S_USER_HOME}/
+USER root
+RUN chown ${S_USER}.${S_USER} ${S_USER_HOME}/install_cryosparc_master.sh
+RUN chmod +x ${S_USER_HOME}/install_cryosparc_master.sh
+USER ${S_USER}
+RUN cd ${S_USER_HOME} && ${S_USER_HOME}/install_cryosparc_master.sh ${CRYOS_LICENSE_ID}
 
 USER root
 #######################
