@@ -23,12 +23,12 @@ topology_template:
       type: string
       description: Instance type of Scipion master node
       required: yes
-      default: 'standard.medium'
+      default: 'm1.medium'
     worker_instance_type:
       type: string
       description: Instance type of Scipion worker node
       required: yes
-      default: 'hpc.8core-64ram-nvidia-1080-glados'
+      default: 'gpu1cpu6'
     disk_size:
       type: scalar-unit.size
       description: Size of the disk to be attached to the FE instance
@@ -45,34 +45,34 @@ topology_template:
       requirements:
         - host: lrms_server
 
-      lrms_server:
-        type: tosca.nodes.indigo.Compute
-        capabilities:
-          endpoint:
-            properties:
-              network_name: PUBLIC
-              ports:
-                ssh_port:
-                  protocol: tcp
-                  source: 22
-                vnc_port:
-                  protocol: tcp
-                  source: 5904
-          host:
-            properties:
-              instance_type: { get_input: master_instance_type }
-          os:
-            properties:
-              image: 'ost://identity.cloud.muni.cz/bb3e9951-5a39-4f5a-8b5c-2e3b9d5f8413'
-              type: linux
+    lrms_server:
+      type: tosca.nodes.indigo.Compute
+      capabilities:
+        endpoint:
+          properties:
+            network_name: PUBLIC
+            ports:
+              ssh_port:
+                protocol: tcp
+                source: 22
+              vnc_port:
+                protocol: tcp
+                source: 5904
+        host:
+          properties:
+            instance_type: { get_input: master_instance_type }
+        os:
+          properties:
+            image: 'ost://keystone3.ui.savba.sk:5000/7302713e-0c2e-46d5-90dc-0fde5a7de347'
+            type: linux
 
-        requirements:
-          - local_storage:
-              node: my_block_storage
-              relationship:
-                type: AttachesTo
-                properties:
-                  location: /home/scipionuser/ScipionUserData
+      requirements:
+        - local_storage:
+            node: my_block_storage
+            relationship:
+              type: AttachesTo
+              properties:
+                location: /home/scipionuser/ScipionUserData
 
     scipion_master:
       type: tosca.nodes.SoftwareComponent
@@ -102,7 +102,7 @@ topology_template:
             instance_type: { get_input: worker_instance_type }
         os:
           properties:
-            image: 'ost://identity.cloud.muni.cz/bb3e9951-5a39-4f5a-8b5c-2e3b9d5f8413'
+            image: 'ost://keystone3.ui.savba.sk:5000/7302713e-0c2e-46d5-90dc-0fde5a7de347'
 
     scipion_wn:
       type: tosca.nodes.SoftwareComponent
