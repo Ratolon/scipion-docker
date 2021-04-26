@@ -1,7 +1,7 @@
 tosca_definitions_version: tosca_simple_yaml_1_0
 
 imports:
-  - indigo_custom_types: https://raw.githubusercontent.com/indigo-dc/tosca-types/master/custom_types.yaml
+  - ec3_custom_types: https://raw.githubusercontent.com/grycap/ec3/tosca/tosca/custom_types.yaml
 
 description: >
   Launch a cluster with Scipion via VNC
@@ -37,19 +37,12 @@ topology_template:
         - valid_values: [ 100 GB, 500 GB, 1 TB, 5 TB, 8TB ]
 
   node_templates:
-
-    lrms_front_end:
-      type: tosca.nodes.indigo.LRMS.FrontEnd.Slurm
-      properties:
-        wn_ips: { get_attribute: [ lrms_wn, private_address ] }
-      requirements:
-        - host: lrms_server
-
     lrms_server:
       type: tosca.nodes.indigo.Compute
       capabilities:
         endpoint:
           properties:
+            dns_name: scipion-master
             network_name: PUBLIC
             ports:
               ssh_port:
@@ -63,7 +56,7 @@ topology_template:
             instance_type: { get_input: master_instance_type }
         os:
           properties:
-            image: 'ost://keystone3.ui.savba.sk:5000/7302713e-0c2e-46d5-90dc-0fde5a7de347'
+            image: 'ost://keystone3.ui.savba.sk:5000/a4387632-5cbd-48b1-888b-438df69baa51'
             type: linux
 
       requirements:
@@ -74,25 +67,23 @@ topology_template:
               properties:
                 location: /home/scipionuser/ScipionUserData
 
-    scipion_master:
+    front:
       type: tosca.nodes.SoftwareComponent
       requirements:
         - host: lrms_server
-        - dependency: lrms_front_end
       interfaces:
         Standard:
           configure:
             implementation: https://raw.githubusercontent.com/CERIT-SC/scipion-docker/slurm/ansible_master.yaml
             inputs:
               vnc_pass: { get_input: vnc_pass }
-
-    wn_node:
-      type: tosca.nodes.indigo.LRMS.WorkerNode.Slurm
-      properties:
-        front_end_ip: { get_attribute: [ lrms_server, private_address, 0 ] }
-        public_front_end_ip: { get_attribute: [ lrms_server, public_address, 0 ] }
-      requirements:
-        - host: lrms_wn
+      artifacts:
+        slurm_role:
+          file: grycap.slurm,master
+          type: tosca.artifacts.AnsibleGalaxy.role
+        nfs_role:
+          file: indigo-dc.nfs,master
+          type: tosca.artifacts.AnsibleGalaxy.role
 
     lrms_wn:
       type: tosca.nodes.indigo.Compute
@@ -102,17 +93,23 @@ topology_template:
             instance_type: { get_input: worker_instance_type }
         os:
           properties:
-            image: 'ost://keystone3.ui.savba.sk:5000/7302713e-0c2e-46d5-90dc-0fde5a7de347'
+            image: 'ost://keystone3.ui.savba.sk:5000/a4387632-5cbd-48b1-888b-438df69baa51'
 
-    scipion_wn:
+    wn:
       type: tosca.nodes.SoftwareComponent
       requirements:
         - host: lrms_wn
-        - dependency: wn_node
       interfaces:
         Standard:
           configure:
             implementation: https://raw.githubusercontent.com/CERIT-SC/scipion-docker/slurm/ansible_worker.yaml
+      artifacts:
+        slurm_role:
+          file: grycap.slurm,master
+          type: tosca.artifacts.AnsibleGalaxy.role
+        nfs_role:
+          file: indigo-dc.nfs,master
+          type: tosca.artifacts.AnsibleGalaxy.role
 
     my_block_storage:
       type: BlockStorage
