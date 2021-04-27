@@ -1,6 +1,5 @@
 ---
 - vars:
-    slurm_front_end_ip: "{{ hostvars[ groups['front'][0]]['IM_NODE_PRIVATE_IP'] }}"
     docker_runtime: |
       {
         "mtu": 1442
