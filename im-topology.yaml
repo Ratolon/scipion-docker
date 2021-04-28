@@ -56,7 +56,7 @@ topology_template:
             instance_type: { get_input: master_instance_type }
         os:
           properties:
-            image: 'ost://keystone3.ui.savba.sk:5000/a4387632-5cbd-48b1-888b-438df69baa51'
+            image: 'ost://keystone3.ui.savba.sk:5000/f6cf9b9b-8358-4072-a9f4-5ba274923908'
             type: linux
 
       requirements:
@@ -77,6 +77,7 @@ topology_template:
             implementation: https://raw.githubusercontent.com/CERIT-SC/scipion-docker/slurm/ansible_master.yaml
             inputs:
               vnc_pass: { get_input: vnc_pass }
+              slurm_front_end_ip: { get_attribute: [ lrms_server, private_address, 0 ] }
       artifacts:
         slurm_role:
           file: grycap.slurm,master
@@ -88,12 +89,15 @@ topology_template:
     lrms_wn:
       type: tosca.nodes.indigo.Compute
       capabilities:
+        endpoint:
+          properties:
+            dns_name: scipion-wn-#N#'
         host:
           properties:
             instance_type: { get_input: worker_instance_type }
         os:
           properties:
-            image: 'ost://keystone3.ui.savba.sk:5000/a4387632-5cbd-48b1-888b-438df69baa51'
+            image: 'ost://keystone3.ui.savba.sk:5000/f6cf9b9b-8358-4072-a9f4-5ba274923908'
 
     wn:
       type: tosca.nodes.SoftwareComponent
@@ -103,6 +107,8 @@ topology_template:
         Standard:
           configure:
             implementation: https://raw.githubusercontent.com/CERIT-SC/scipion-docker/slurm/ansible_worker.yaml
+            inputs:
+              slurm_front_end_ip: { get_attribute: [ lrms_server, private_address, 0 ] }
       artifacts:
         slurm_role:
           file: grycap.slurm,master
