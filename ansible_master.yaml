@@ -28,9 +28,9 @@
   - role: grycap.slurm
     slurm_type_of_node: 'front'
     slurm_server_name: 'scipion-master'
-    slurm_wn_ips: '{{ groups["wn"]|map("extract", hostvars, "ansible_default_ipv4.address")|list if "wn" in groups else [] }}'
+    slurm_wn_ips: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_default_ipv4.address")|list if "lrms_wn" in groups else [] }}'
     slurm_vnode_prefix: "{{ vnode_prefix }}"
-    slurm_wn_nodenames: '{{ groups["wn"]|map("extract", hostvars, "ansible_hostname")|list if "wn" in groups else [] }}'
+    slurm_wn_nodenames: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_hostname")|list if "lrms_wn" in groups else [] }}'
     slurm_wn_mem: 4096
     slurm_wn_cpus: 6
     slurm_wn_gres: "gpu:1"
