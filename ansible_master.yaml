@@ -1,6 +1,7 @@
 ---
 - vars:
     vnode_prefix: scipion-wn-
+    vnode_master: scipion-master
 
     docker_runtime: |
       {
@@ -27,7 +28,7 @@
     nfs_exports: [{path: "/home/scipionuser/ScipionUserData", export: "{{ vnode_prefix }}*.localdomain(fsid=0,rw,async,no_root_squash,no_subtree_check,insecure)"}]
   - role: grycap.slurm
     slurm_type_of_node: 'front'
-    slurm_server_name: 'scipion-master'
+    slurm_server_name: "{{ vnode_master }}"
     slurm_wn_ips: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_default_ipv4.address")|list if "lrms_wn" in groups else [] }}'
     slurm_vnode_prefix: "{{ vnode_prefix }}"
     slurm_wn_nodenames: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_hostname")|list if "lrms_wn" in groups else [] }}'
@@ -85,17 +86,19 @@
     shell: usermod --shell /bin/bash -aG docker scipionuser
 
   - name: Run Scipion master container
-    #shell: docker run -d --name=scipionmaster --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="abc" -e USER_PASS="abc" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -v /usr/local/etc/slurm.conf:/usr/local/etc/slurm.conf --add-host scipion-master:ldelcano/scipion-master:slurm
+    #shell: docker run -d --name=scipionmaster --hostname=scipion-master --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="abc" -e USER_PASS="abc" -e CRYOSPARC_LICENSE="a3dc0cc0-3181-11ea-84d0-8b3771c7f13b" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -v /usr/local/etc/slurm.conf:/usr/local/etc/slurm.conf -v /usr/local/etc/gres.conf:/usr/local/etc/gres.conf -v /etc/munge/munge.key:/etc/munge/munge.key --add-host scipion-master:ip ldelcano/scipion-master:slurm
     docker_container:
       name: scipionmaster
+      hostname: "{{ vnode_master }}"
       image: ldelcano/scipion-master:slurm
       privileged: yes
       published_ports:
         - 5904:5904
       env:
         USE_DISPLAY: "4"
-        ROOT_PASS: "abc"
-        USER_PASS: "abc"
+        ROOT_PASS: "Scipion4U"
+        USER_PASS: "Scipion4U"
+        CRYOSPARC_LICENSE: "{{ cryosparc_license }}"
       volumes:
         - /tmp/.X11-unix/X0:/tmp/.X11-unix/X0
         - /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData
@@ -103,5 +106,5 @@
         - /usr/local/etc/gres.conf:/usr/local/etc/gres.conf
         - /etc/munge/munge.key:/etc/munge/munge.key
       etc_hosts:
-        {"scipion-master":"{{ slurm_front_end_ip }}"}
+        {"{{ vnode_master }}":"{{ slurm_front_end_ip }}"}
 

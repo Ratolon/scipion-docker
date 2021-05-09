@@ -1,5 +1,6 @@
 ---
 - vars:
+    vnode_master: scipion-master
     docker_runtime: |
       {
         "mtu": 1442
@@ -48,7 +49,7 @@
     nfs_client_imports: [{ local: "/home/scipionuser/ScipionUserData", remote: "/home/scipionuser/ScipionUserData", server_host: "{{ slurm_front_end_ip }}", opts: "defaults,nolock" }]
   - role: grycap.slurm
     slurm_type_of_node: 'wn'
-    slurm_server_name: 'scipion-master'
+    slurm_server_name: "{{ vnode_master }}"
     slurm_server_ip: "{{ slurm_front_end_ip }}"
     slurm_wn_ips: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_default_ipv4.address")|list if "lrms_wn" in groups else [] }}'
     slurm_wn_nodenames: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_hostname")|list if "lrms_wn" in groups else [] }}'
