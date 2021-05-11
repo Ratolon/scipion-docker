@@ -106,5 +106,5 @@
         - /usr/local/etc/gres.conf:/usr/local/etc/gres.conf
         - /etc/munge/munge.key:/etc/munge/munge.key
       etc_hosts:
-        {"{{ vnode_master }}":"{{ slurm_front_end_ip }}"}
+        {"scipion-master":"{{ slurm_front_end_ip }}"}
 
