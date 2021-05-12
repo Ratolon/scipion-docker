@@ -13,6 +13,9 @@ export PATH="/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/loca
 sed -i -e "s+CRYOSPARC_MASTER_HOSTNAME=.*+CRYOSPARC_MASTER_HOSTNAME=\"$HOSTNAME\"+g" $S_USER_HOME/cryosparc3/cryosparc_master/config.sh
 sudo -u $S_USER $S_USER_HOME/cryosparc3/cryosparc_master/bin/cryosparcm start
 
+# Add cryosparc user
+sudo -u $S_USER $S_USER_HOME/cryosparc3/cryosparc_master/bin/cryosparcm createuser --email "i2pc@cnb.csic.es" --password "i2pc" --username "i2pc" --firstname "cnb" --lastname "csic"
+
 echo $USE_DISPLAY
 export WEBPORT=590${USE_DISPLAY}
 export DISPLAY=:${USE_DISPLAY}

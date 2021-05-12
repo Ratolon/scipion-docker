@@ -13,7 +13,7 @@ ARG CRYOSPARC_VERSION=3.1.0
 
 ARG S_USER=scipionuser
 ARG S_USER_HOME=/home/${S_USER}
-ARG CRYOS_LICENSE_ID=a3dc0cc0-3181-11ea-84d0-8b3771c7f13b
+ARG CRYOSPARC_LICENSE=a3dc0cc0-3181-11ea-84d0-8b3771c7f13b
 
 USER root
 #######################
@@ -118,7 +118,7 @@ RUN mkdir ${S_USER_HOME}/scipion3/software/em/motioncor2-1.4.0
 # Install cryosparc master
 USER ${S_USER}
 RUN mkdir ${S_USER_HOME}/cryosparc3
-RUN curl -L https://get.cryosparc.com/download/master-v${CRYOSPARC_VERSION}/${CRYOS_LICENSE_ID} -o ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz
+RUN curl -L https://get.cryosparc.com/download/master-v${CRYOSPARC_VERSION}/${CRYOSPARC_LICENSE} -o ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz
 RUN tar -xf ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz -C ${S_USER_HOME}/cryosparc3
 RUN rm ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz
 COPY install_cryosparc_master.sh ${S_USER_HOME}/
@@ -126,7 +126,7 @@ USER root
 RUN chown ${S_USER}.${S_USER} ${S_USER_HOME}/install_cryosparc_master.sh
 RUN chmod +x ${S_USER_HOME}/install_cryosparc_master.sh
 USER ${S_USER}
-RUN cd ${S_USER_HOME} && ${S_USER_HOME}/install_cryosparc_master.sh ${CRYOS_LICENSE_ID}
+RUN cd ${S_USER_HOME} && ${S_USER_HOME}/install_cryosparc_master.sh
 
 USER root
 #######################
@@ -152,7 +152,7 @@ RUN echo '#!/bin/sh\n\
 xfce4-session \
 ' >/tmp/xsession; chmod +x /tmp/xsession
 
-ENV MYVNCPASSWORD abc
+ENV MYVNCPASSWORD Scipion4U
 ENV EDITOR=/usr/bin/pluma
 
 COPY self.pem /
