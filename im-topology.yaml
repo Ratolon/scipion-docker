@@ -1,49 +1,93 @@
-tosca_definitions_version: tosca_simple_yaml_1_0
 
+tosca_definitions_version: tosca_simple_yaml_1_0
 imports:
   - ec3_custom_types: https://raw.githubusercontent.com/grycap/ec3/tosca/tosca/custom_types.yaml
-
 description: >
   Launch a cluster with Scipion via VNC
-
 metadata:
   display_name: Scipion on SLURM cluster
   icon: images/scipion.png
   tag: beta
-
 topology_template:
-
   inputs:
     vnc_pass:
       type: string
       description: VNC password
       required: yes
       default: Scipion4u
+    cryosparc_license:
+      type: string
+      description: Cryosparc license id
+      required: no
+      default: 'a3dc0cc0-3181-11ea-84d0-8b3771c7f13b'
     master_instance_type:
       type: string
       description: Instance type of Scipion master node
       required: yes
-      default: 'm1.medium'
+      #default: 'm1.medium' #IISAS-GPUCloud
+      #default: 'cm4.large' #IFCA
+      default: 'standard.medium' #CESNET
     worker_instance_type:
       type: string
       description: Instance type of Scipion worker node
       required: yes
-      default: 'gpu1cpu6'
+      #default: 'gpu1cpu6' #IISAS-GPUCloud
+      #default: 'g7.8xlarge' #IFCA
+      default: 'hpc.8core-64ram-nvidia-1080-glados' #CESNET
+    network_name_pub:
+      type: string
+      description: Public network name (only needed for CESNET = public-muni-147-251-21-GROUP)
+      required: no
+      default: 'public-muni-147-251-21-GROUP'
+    network_name_priv:
+      type: string
+      description: Private network name (only needed for CESNET = group-project-network)
+      required: no
+      default: 'group-project-network'
     disk_size:
       type: scalar-unit.size
       description: Size of the disk to be attached to the FE instance
       default: 100 GB
       constraints:
         - valid_values: [ 100 GB, 500 GB, 1 TB, 5 TB, 8TB ]
-
   node_templates:
+    pub_network:
+      type: tosca.nodes.network.Network
+      properties:
+        network_type: public
+        network_name: { get_input: network_name_pub }
+    server_pub_port:
+      type: tosca.nodes.network.Port
+      properties:
+        order: 1
+      requirements:
+        - binding: lrms_server
+        - link: pub_network
+    priv_network:
+      type: tosca.nodes.network.Network
+      properties:
+        network_type: private
+        network_name: { get_input: network_name_priv }
+    server_port:
+      type: tosca.nodes.network.Port
+      properties:
+        order: 0
+      requirements:
+        - binding: lrms_server
+        - link: priv_network
+    wn_port:
+      type: tosca.nodes.network.Port
+      properties:
+        order: 0
+      requirements:
+        - binding: lrms_wn
+        - link: priv_network
     lrms_server:
       type: tosca.nodes.indigo.Compute
       capabilities:
         endpoint:
           properties:
             dns_name: scipion-master
-            network_name: PUBLIC
             ports:
               ssh_port:
                 protocol: tcp
@@ -56,9 +100,10 @@ topology_template:
             instance_type: { get_input: master_instance_type }
         os:
           properties:
-            image: 'ost://keystone3.ui.savba.sk:5000/f6cf9b9b-8358-4072-a9f4-5ba274923908'
+            #image: 'ost://keystone3.ui.savba.sk:5000/f030f834-3c14-4979-98e2-c07e82f51a1b' #IISAS-FedCloud
+            #image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
+            image: 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8' #CESNET
             type: linux
-
       requirements:
         - local_storage:
             node: my_block_storage
@@ -66,7 +111,6 @@ topology_template:
               type: AttachesTo
               properties:
                 location: /home/scipionuser/ScipionUserData
-
     front:
       type: tosca.nodes.SoftwareComponent
       requirements:
@@ -77,6 +121,7 @@ topology_template:
             implementation: https://raw.githubusercontent.com/CERIT-SC/scipion-docker/slurm/ansible_master.yaml
             inputs:
               vnc_pass: { get_input: vnc_pass }
+              cryosparc_license: { get_input: cryosparc_license }
               slurm_front_end_ip: { get_attribute: [ lrms_server, private_address, 0 ] }
       artifacts:
         slurm_role:
@@ -85,7 +130,6 @@ topology_template:
         nfs_role:
           file: indigo-dc.nfs,master
           type: tosca.artifacts.AnsibleGalaxy.role
-
     lrms_wn:
       type: tosca.nodes.indigo.Compute
       capabilities:
@@ -97,8 +141,9 @@ topology_template:
             instance_type: { get_input: worker_instance_type }
         os:
           properties:
-            image: 'ost://keystone3.ui.savba.sk:5000/f6cf9b9b-8358-4072-a9f4-5ba274923908'
-
+            #image: 'ost://keystone3.ui.savba.sk:5000/f030f834-3c14-4979-98e2-c07e82f51a1b' #IISAS-FedCloud
+            #image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
+            image: 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601' #CESNET
     wn:
       type: tosca.nodes.SoftwareComponent
       requirements:
@@ -116,12 +161,10 @@ topology_template:
         nfs_role:
           file: indigo-dc.nfs,master
           type: tosca.artifacts.AnsibleGalaxy.role
-
     my_block_storage:
       type: BlockStorage
       properties:
         size: { get_input: disk_size }
-
   outputs:
     master_node_ip:
       value: { concat: [ 'https://', get_attribute: [ master_node, public_address, 0 ], ':5904/?resize=remote' ] }
