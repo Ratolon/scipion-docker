@@ -96,54 +96,54 @@
       register: gpu_support
       ignore_errors: yes
 
-        - name: Set mtu value to docker network
-          copy:
-            content: "{{ docker_runtime }}"
-            dest: /etc/docker/daemon.json
+  - name: Set mtu value to docker network
+    copy:
+      content: "{{ docker_runtime }}"
+      dest: /etc/docker/daemon.json
 
-        - name: Start docker service
-          service:
-            name: docker
-            state: restarted
+  - name: Start docker service
+    service:
+      name: docker
+      state: restarted
 
-        - name: Get release name
-          shell: . /etc/os-release;echo $ID$VERSION_ID
-          register: distribution
+  - name: Get release name
+    shell: . /etc/os-release;echo $ID$VERSION_ID
+    register: distribution
 
-        - name: Add scipionuser to docker group and change shell
-          shell: usermod --shell /bin/bash -aG docker scipionuser
+  - name: Add scipionuser to docker group and change shell
+    shell: usermod --shell /bin/bash -aG docker scipionuser
 
-        - name: All gpu dependent tasks
-          block:
-            - name: Add nvidia docker runtime source
-              shell: 'curl -s -L https://nvidia.github.io/nvidia-docker/{{ distribution.stdout }}/nvidia-docker.list | tee /etc/apt/sources.list.d/nvidia-docker.list'
+  - name: All gpu dependent tasks
+    block:
+    - name: Add nvidia docker runtime source
+      shell: 'curl -s -L https://nvidia.github.io/nvidia-docker/{{ distribution.stdout }}/nvidia-docker.list | tee /etc/apt/sources.list.d/nvidia-docker.list'
 
-            - name: Add nvidia docker runtime GPG 1/2
-              apt_key:
-                url: https://nvidia.github.io/nvidia-docker/gpgkey
-                state: present
+    - name: Add nvidia docker runtime GPG 1/2
+      apt_key:
+        url: https://nvidia.github.io/nvidia-docker/gpgkey
+        state: present
 
-            - name: Add nvidia docker runtime GPG 2/2
-              apt_key:
-                url: https://nvidia.github.io/nvidia-container-runtime/gpgkey
-                state: present
+    - name: Add nvidia docker runtime GPG 2/2
+      apt_key:
+        url: https://nvidia.github.io/nvidia-container-runtime/gpgkey
+        state: present
 
-            - name: Install nvidia-container-toolkit and nvidia-container-runtime
-              apt:
-                name: ['nvidia-container-toolkit', 'nvidia-container-runtime']
-                update_cache: yes
+    - name: Install nvidia-container-toolkit and nvidia-container-runtime
+      apt:
+        name: ['nvidia-container-toolkit', 'nvidia-container-runtime']
+        update_cache: yes
 
-            - name: Set nvidia as default docker runtime
-              copy:
-                content: "{{ docker_runtime_nvidia }}"
-                dest: /etc/docker/daemon.json
+    - name: Set nvidia as default docker runtime
+        copy:
+          content: "{{ docker_runtime_nvidia }}"
+          dest: /etc/docker/daemon.json
 
-            - name: Restart docker
-              service:
-                name: docker
-                state: restarted
+    - name: Restart docker
+      service:
+        name: docker
+        state: restarted
 
-          when: gpu_support is success
+    when: gpu_support is success
 
   - name: Run Scipion master container
     #shell: docker run -d --name=scipionmaster --hostname=scipion-master --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="abc" -e USER_PASS="abc" -e CRYOSPARC_LICENSE="a3dc0cc0-3181-11ea-84d0-8b3771c7f13b" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -v /usr/local/etc/slurm.conf:/usr/local/etc/slurm.conf -v /usr/local/etc/gres.conf:/usr/local/etc/gres.conf -v /etc/munge/munge.key:/etc/munge/munge.key --add-host scipion-master:ip ldelcano/scipion-master:slurm
