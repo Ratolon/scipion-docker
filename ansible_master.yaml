@@ -92,9 +92,9 @@
       name: docker
 
   - name: Test GPU support
-      command: nvidia-smi
-      register: gpu_support
-      ignore_errors: yes
+    command: nvidia-smi
+    register: gpu_support
+    ignore_errors: yes
 
   - name: Set mtu value to docker network
     copy:
