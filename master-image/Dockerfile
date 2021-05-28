@@ -1,14 +1,13 @@
 
 #FROM registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker/base-image:dev
-FROM ldelcano/scipion-base:slurm
+FROM ldelcano/scipion-worker:slurm
 
 ARG TURBOVNC_VERSION=2.2.4
-ARG VIRTUALGL_VERSION=2.5.2
 ARG LIBJPEG_VERSION=1.5.2
 ARG WEBSOCKIFY_VERSION=0.8.0
 ARG NOVNC_VERSION=1.1.0
 
-ARG SLURM_VERSION=20.02.6
+ARG SLURM_VERSION=20.02.7
 ARG CRYOSPARC_VERSION=3.1.0
 
 ARG S_USER=scipionuser
@@ -64,14 +63,12 @@ RUN rm -rf /var/lib/apt/lists/*
 # Install TurboVNC, VirtualGL, noVNC
 RUN cd /tmp && \
     curl -fsSL -O https://deac-fra.dl.sourceforge.net/project/turbovnc/${TURBOVNC_VERSION}/turbovnc_${TURBOVNC_VERSION}_amd64.deb \
-        -O https://deac-fra.dl.sourceforge.net/project/libjpeg-turbo/${LIBJPEG_VERSION}/libjpeg-turbo-official_${LIBJPEG_VERSION}_amd64.deb \
-        -O https://deac-fra.dl.sourceforge.net/project/virtualgl/${VIRTUALGL_VERSION}/virtualgl_${VIRTUALGL_VERSION}_amd64.deb \
-        -O https://deac-fra.dl.sourceforge.net/project/virtualgl/${VIRTUALGL_VERSION}/virtualgl32_${VIRTUALGL_VERSION}_amd64.deb && \
+        -O https://deac-fra.dl.sourceforge.net/project/libjpeg-turbo/${LIBJPEG_VERSION}/libjpeg-turbo-official_${LIBJPEG_VERSION}_amd64.deb && \
     dpkg -i *.deb && \
     rm -f /tmp/*.deb && \
     sed -i 's/$host:/unix:/g' /opt/TurboVNC/bin/vncserver
 
-ENV PATH ${PATH}:/opt/VirtualGL/bin:/opt/TurboVNC/bin
+ENV PATH ${PATH}:/opt/TurboVNC/bin
 
 RUN curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz | tar -xzf - -C /opt && \
     curl -fsSL https://github.com/novnc/websockify/archive/v${WEBSOCKIFY_VERSION}.tar.gz | tar -xzf - -C /opt && \
@@ -104,23 +101,16 @@ ENV NVIDIA_DRIVER_CAPABILITIES compute,utility,display
 USER ${S_USER}
 #######################
 
-# Install plugins for Scipion
-COPY plugin-list.txt ${S_USER_HOME}/
-RUN for pl in $(cat ${S_USER_HOME}/plugin-list.txt); do ${S_USER_HOME}/scipion3/scipion3 installp -p $pl -j $(nproc) --noBin; done
-RUN  rm ${S_USER_HOME}/scipion3/software/em/*gz
-
 COPY hosts.conf ${S_USER_HOME}/scipion3/config/
 
-# This is needed since we do not have binaries installed in master docker
-RUN mkdir ${S_USER_HOME}/scipion3/software/em/gctf-1.18
-RUN mkdir ${S_USER_HOME}/scipion3/software/em/motioncor2-1.4.0
-
-# Install cryosparc master
+# Install cryosparc
 USER ${S_USER}
 RUN mkdir ${S_USER_HOME}/cryosparc3
-RUN curl -L https://get.cryosparc.com/download/master-v${CRYOSPARC_VERSION}/${CRYOSPARC_LICENSE} -o ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz
+RUN curl -L https://get.cryosparc.com/download/master-latest/$CRYOSPARC_LICENSE -o ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz
+RUN curl -L https://get.cryosparc.com/download/worker-latest/$CRYOSPARC_LICENSE -o ${S_USER_HOME}/cryosparc3/cryosparc_worker.tar.gz
 RUN tar -xf ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz -C ${S_USER_HOME}/cryosparc3
-RUN rm ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz
+RUN tar -xf ${S_USER_HOME}/cryosparc3/cryosparc_worker.tar.gz -C ${S_USER_HOME}/cryosparc3
+RUN rm ${S_USER_HOME}/cryosparc3/cryosparc_*.tar.gz
 COPY install_cryosparc_master.sh ${S_USER_HOME}/
 USER root
 RUN chown ${S_USER}.${S_USER} ${S_USER_HOME}/install_cryosparc_master.sh
@@ -156,8 +146,6 @@ ENV MYVNCPASSWORD Scipion4U
 ENV EDITOR=/usr/bin/pluma
 
 COPY self.pem /
-
-#COPY plugin-list.txt ${S_USER_HOME}/
 
 # run docker-entrypoint.sh
 COPY docker-entrypoint-root.sh /

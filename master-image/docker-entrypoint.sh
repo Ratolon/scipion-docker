@@ -7,14 +7,14 @@ S_USER_HOME=/home/${S_USER}
 
 ln -s ${S_USER_HOME}/ScipionUserData/data ${S_USER_HOME}/scipion3/data
 
-export PATH="/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/VirtualGL/bin:/opt/TurboVNC/bin"
+export PATH="/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/TurboVNC/bin"
 
 # Update cryosparc hostnames
 sed -i -e "s+CRYOSPARC_MASTER_HOSTNAME=.*+CRYOSPARC_MASTER_HOSTNAME=\"$HOSTNAME\"+g" $S_USER_HOME/cryosparc3/cryosparc_master/config.sh
 sudo -u $S_USER $S_USER_HOME/cryosparc3/cryosparc_master/bin/cryosparcm start
 
-# Add cryosparc user
-sudo -u $S_USER $S_USER_HOME/cryosparc3/cryosparc_master/bin/cryosparcm createuser --email "i2pc@cnb.csic.es" --password "i2pc" --username "i2pc" --firstname "cnb" --lastname "csic"
+# Connect worker
+sudo -u $S_USER $S_USER_HOME/cryosparc3/cryosparc_worker/bin/cryosparcw connect --worker $HOSTNAME --master $HOSTNAME --nossd
 
 echo $USE_DISPLAY
 export WEBPORT=590${USE_DISPLAY}
