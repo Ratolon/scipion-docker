@@ -42,9 +42,6 @@
     apt:
       name: ['nvidia-driver-440', 'nvidia-cuda-dev']
 
-  - name: Reboot master
-    reboot:
-
   roles:
   - role: indigo-dc.nfs
     nfs_mode: 'server'
