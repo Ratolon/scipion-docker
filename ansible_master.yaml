@@ -38,12 +38,12 @@
       repo: ppa:graphics-drivers/ppa
       update_cache: yes
 
-      - name: Install nvidia-driver package
-        apt:
-          name: ['nvidia-driver-440', 'nvidia-cuda-dev']
+  - name: Install nvidia-driver package
+    apt:
+      name: ['nvidia-driver-440', 'nvidia-cuda-dev']
 
-      - name: Reboot worker
-        reboot:
+  - name: Reboot worker
+    reboot:
             -
   roles:
   - role: indigo-dc.nfs
