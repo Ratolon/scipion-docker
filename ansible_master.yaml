@@ -134,9 +134,9 @@
         update_cache: yes
 
     - name: Set nvidia as default docker runtime
-        copy:
-          content: "{{ docker_runtime_nvidia }}"
-          dest: /etc/docker/daemon.json
+      copy:
+        content: "{{ docker_runtime_nvidia }}"
+        dest: /etc/docker/daemon.json
 
     - name: Restart docker
       service:
