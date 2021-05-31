@@ -11,10 +11,12 @@ export PATH="/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/loca
 
 # Update cryosparc hostnames
 sed -i -e "s+CRYOSPARC_MASTER_HOSTNAME=.*+CRYOSPARC_MASTER_HOSTNAME=\"$HOSTNAME\"+g" $S_USER_HOME/cryosparc3/cryosparc_master/config.sh
-sudo -u $S_USER $S_USER_HOME/cryosparc3/cryosparc_master/bin/cryosparcm start
+sudo -u $S_USER $S_USER_HOME/cryosparc3/cryosparc_master/bin/cryosparcm restart
 
+set +e
 # Connect worker
 sudo -u $S_USER $S_USER_HOME/cryosparc3/cryosparc_worker/bin/cryosparcw connect --worker $HOSTNAME --master $HOSTNAME --nossd
+set -e
 
 echo $USE_DISPLAY
 export WEBPORT=590${USE_DISPLAY}

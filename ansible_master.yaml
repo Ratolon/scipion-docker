@@ -52,6 +52,7 @@
     slurm_wn_ips: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_default_ipv4.address")|list if "lrms_wn" in groups else [] }}'
     slurm_vnode_prefix: "{{ vnode_prefix }}"
     slurm_wn_nodenames: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_hostname")|list if "lrms_wn" in groups else [] }}'
+    # Following parameters cannot be hardcoded since they are dependant on HW especifications
     slurm_wn_mem: 4096
     slurm_wn_cpus: 6
     slurm_wn_gres: "gpu:1"
