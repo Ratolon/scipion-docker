@@ -27,9 +27,10 @@ topology_template:
       #default: 'g1.c08r31-K20m' #IISAS-FedCloud GPU
       #default: 'm1.medium' #IISAS-FedCloud no GPU
       #default: 'cm4.large' #IFCA no GPU
+      default: 'g7.8xlarge' #IFCA GPU
       #default: 'hpc.8core-64ram-nvidia-1080-glados' #CESNET GPU
       #default: 'hpc.64core-512ram-nvidia-t4' # CESNET GPU
-      default: 'standard.medium' #CESNET
+      #default: 'standard.medium' #CESNET no GPU
 
     worker_instance_type:
       type: string
@@ -37,24 +38,32 @@ topology_template:
       required: yes
       #default: 'm1.xlarge' #IISAS-FedCloud
       #default: 'g7.8xlarge' #IFCA
+      default: 'cm4.large' #IFCA no GPU
       #default: 'standard.medium' #CESNET
-      default: 'hpc.64core-512ram-nvidia-t4' # CESNET GPU
+      #default: 'hpc.64core-512ram-nvidia-t4' # CESNET GPU
     network_name_pub:
       type: string
       description: Public network name (only needed for CESNET = public-muni-147-251-21-GROUP)
       required: no
-      default: 'public-muni-147-251-21-GROUP'
+      #default: 'public-muni-147-251-21-GROUP'
     network_name_priv:
       type: string
       description: Private network name (only needed for CESNET = group-project-network)
       required: no
-      default: 'group-project-network'
+      #default: 'group-project-network'
     disk_size:
       type: scalar-unit.size
       description: Size of the disk to be attached to the FE instance
       default: 100 GB
       constraints:
         - valid_values: [ 100 GB, 500 GB, 1 TB, 5 TB, 8TB ]
+    workers_num:
+      type: integer
+      description: Number of worker nodes in cluster
+      default: 0
+      constraints:
+        - valid_values: [ 0, 1 ]
+
   node_templates:
     pub_network:
       type: tosca.nodes.network.Network
@@ -106,8 +115,8 @@ topology_template:
         os:
           properties:
             #image: 'ost://cloud.ui.savba.sk:5000/2a1c0a0e-529a-4b44-894f-32a4e3f6357e' #IISAS-FedCloud
-            #image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
-            image: 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8' #CESNET NO GPU
+            image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
+            #image: 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8' #CESNET NO GPU
             #image: 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601' #CESNET GPU
             type: linux
       requirements:
@@ -141,7 +150,7 @@ topology_template:
       capabilities:
         scalable:
           properties:
-            count: 1
+            count: { get_input: workers_num }
         endpoint:
           properties:
             dns_name: scipion-wn-#N#
@@ -151,8 +160,8 @@ topology_template:
         os:
           properties:
             #image: 'ost://cloud.ui.savba.sk:5000/2a1c0a0e-529a-4b44-894f-32a4e3f6357e' #IISAS-FedCloud
-            #image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
-            image: 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601' #CESNET GPU
+            image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
+            #image: 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601' #CESNET GPU
             #image: 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8' #CESNET NO GPU
     wn:
       type: tosca.nodes.SoftwareComponent
