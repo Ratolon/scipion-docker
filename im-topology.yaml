@@ -186,4 +186,4 @@ topology_template:
         size: { get_input: disk_size }
   outputs:
     master_node_ip:
-      value: { concat: [ 'https://', get_attribute: [ master_node, public_address, 0 ], ':5904/?resize=remote' ] }
+      value: { concat: [ 'https://', get_attribute: [ lrms_server, public_address, 0 ], ':5904/?resize=remote' ] }
