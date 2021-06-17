@@ -9,8 +9,10 @@ ln -s ${S_USER_HOME}/ScipionUserData/data ${S_USER_HOME}/scipion3/data
 
 export PATH="/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/TurboVNC/bin"
 
-# Update cryosparc hostnames
+# Update cryosparc hostname and license
 sed -i -e "s+CRYOSPARC_MASTER_HOSTNAME=.*+CRYOSPARC_MASTER_HOSTNAME=\"$HOSTNAME\"+g" $S_USER_HOME/cryosparc3/cryosparc_master/config.sh
+sed -i -e "s+CRYOSPARC_LICENSE_ID=.*+CRYOSPARC_LICENSE_ID=\"$CRYOSPARC_LICENSE\"+g" $S_USER_HOME/cryosparc3/cryosparc_master/config.sh
+sed -i -e "s+CRYOSPARC_LICENSE_ID=.*+CRYOSPARC_LICENSE_ID=\"$CRYOSPARC_LICENSE\"+g" $S_USER_HOME/cryosparc3/cryosparc_worker/config.sh
 sudo -u $S_USER $S_USER_HOME/cryosparc3/cryosparc_master/bin/cryosparcm restart
 
 set +e
