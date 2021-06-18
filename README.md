@@ -1,18 +1,60 @@
 # Scipion-docker
 
-## Deploy Scipion using IM
-### 1. Go to IM-web and log in with your account
+This repo contains all pieces of code needed to deploy an scipion single node or cluster using TOSCA, ansible customization recipes and docker images.
+
+## Deploy Scipion using IM dashboard
+
+This is the production way.
+### 1. Go to [IM-dashboard](https://appsgrycap.i3m.upv.es:31443/im-dashboard/login) and log in with your account
+### 2. Make sure your account can use cryoem.instruct-eric.eu Virtual Organization
+Access can be requested [here](https://aai.egi.eu/registry/co_petitions/start/coef:84).
+
+Go to the credentials menu on the right-upper part of the page and add the sites where you want to deploy. Currently the following VOs support this service: IFCA, CESNET and IISAS FedCloud.
+
+![IM - dashboard cloud credentials](docs/im-dashboard-cloud-credentials.png)
+
+Click on the infrastructure wizard for Scipion and fill up the **Input Values** tab with the desired values:
+
+ * VNC password
+ * Master and worker instance types (depending on site)
+ * Cryosparc license
+ * Public and private network (this is only needed for CESNET site, othewise do not set it)
+ * Size of the disk to  be attached to the cluster
+ * Number of worker nodes in the cluster (by default none = single node deployment)
+ 
+ On the **Cloud Provider Selection** select the site where you want to deploy the cluster as well as the **Image** (Ubuntu bionic).
+  
+### 3. Submit your infrastructure
+
+You can check the log to see that everything worked well and once the status be **configured** you can click on the URL given in **Outputs** to access the service.
+
+[Here](https://scipion-em.github.io/docs/docs/developer/scipion-on-the-egi-federated-cloud) you can find documentation on how to use the service.
+
+## Deploy Scipion using IM web
+
+This portal is very similar to the dashboard but TOSCA must be provided explicitly.
+
+### 1. Go to [IM-web](https://appsgrycap.i3m.upv.es:31443/im-web/) and log in with your account
 ### 2. Make sure you have access to the desired platform
-You can open a list your **Crendentials** on the left menu.
+You can open a list your **Credentials** on the left menu.
 If necessary, add a new one by clicking the "Add +" button and entering correct information.
 
-### 3. Paste the RADL/TOSCA recipe into the new IM topology
+### 3. Paste the TOSCA recipe into the new IM topology
 
 Click the **Topologies** button in the left menu and the **Add +** button at the top.
 
-Paste the RADL/TOSCA recipe from the **im-topology.yml** file and save the topology.
+Paste the TOSCA recipe from the **im-topology.yml** file and save the topology.
 
-**Please change default password for VNC at the beginning of the Ansible section!**
+**Please change default input values:**
+ 
+ * VNC password
+ * Master and worker instance types (depending on site)
+ * Cryosparc license
+ * Public and private network (this is only needed for CESNET site, othewise do not set it)
+ * Size of the disk to  be attached to the cluster
+ * Number of worker nodes in the cluster (by default none = single node deployment)
+
+**Also change image in the os property for lrms_server and lrms_wn sections.**
 
 You can edit the recipe if needed.
 More info about the IM: https://imdocs.readthedocs.io/en/latest/intro.html
@@ -22,6 +64,7 @@ More info about the IM: https://imdocs.readthedocs.io/en/latest/intro.html
 In the list of topologies launch the one you just created.
 You will be redirected to the **Infrastructures** section on the page.
 Wait for the **configured** status of the topology.
+You can check the log to see that everything worked well.
 
 ### 5. Connect to the application
 
@@ -36,8 +79,7 @@ Log in using your password and enjoy working with the Scipion.
 ![IM - VM info](docs/im-infrastructures-vm-info.png)
 ![IM - VM address](docs/im-infrastructures-vm-address.png)
 
-
-## Prepare Master node manually
+## Prepare and run Master node manually
 ### Prerequisites (ubuntu packages)
 * nvidia drivers
 * docker with nVidia runtime
@@ -117,37 +159,53 @@ https://github.com/NVIDIA/nvidia-docker/wiki/Advanced-topics#default-runtime
 If you need **runc** as a default runtime for some purpose, do not change this runtime.
 Note that you will now need to start the docker image with "**--runtime=nvidia**".
 
-### Run a container
+### Run the master container (or single node)
 
-#### Re-pull the images before running the containers
+#### Re-pull the image before running the container
 ```bash
-docker pull registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker:latest
+docker pull ldelcano/scipion-master:slurm
 ```
-
-
 #### Run
 
 ```
-docker run --privileged -d --rm -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="abc" -e USER_PASS="abc" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 --mount src=scipion-plugins,dst=/opt/scipion/software/em registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker:latest
+docker run -d --name=scipionmaster --hostname=scipion-master --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="ROOTPassword" -e USER_PASS="USERPassword" -e MYVNCPASSWORD="VNCPassword" -e CRYOSPARC_LICENSE="YOURSCRYOSPARCLICENSE" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 ldelcano/scipion-master:slurm
 ```
 
-Env var "**USE_DISPLAY**" will create new display (e.g. "**:5**").
+Env var "**USE_DISPLAY**" will create new display (e.g. "**:4**").
 Please note that you need new one for each instance. Therefore change the "**USE_DISPLAY**" value for each instance.
 
 Only one-digit display number is now supported.
 
-This is also related to the port. Change last digit of the ports "**-p 5905:5905**".
+This is also related to the port. Change last digit of the ports "**-p 5904:5904**".
+
+You should also specify the ROOT_PASSWORD, USER_PASSWORD and MYVNCPASSWORD for the docker container as well as a new cryosparc license (there is a default one set up for testing but might give problems if in use in another container).
 
 In addition, if you are using default docker runtime, you have to run the container with "**--runtime=nvidia**" parameter.
 
-### Basic test
+### Test the master container
 
-Your instance should be available on the link: "**https://your-adress:5905**".
+Your instance should be available on the link: "**https://your-adress:5904**".
 
-The log-in password is now hard-coded in **Dockerfile**.
+You should use the MYVNCPASSWORD to login.
 
-Open terminal a try "**nvidia-smi**" and "**glxgears -info**" commands.
+To check that nvidia is working fine open terminal a try "**nvidia-smi**" and "**glxgears -info**" commands.
 Both should print output containing information about your nVidia graphics card.
+
+## Run a test on the worker container
+
+#### Re-pull the image before running the container
+```bash
+docker pull ldelcano/scipion-worker:slurm
+```
+
+#### Run
+
+```
+docker run -d --name=scipionworker --hostname=scipion-wn-1 --privileged -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -u scipionuser ldelcano/scipion-worker:slurm /home/scipionuser/scipion3/scipion3 test gctf.tests.test_protocols_gctf.TestGctf
+```
+You can map a folder on the host to the ScipionUserData folder in the container to verify the test or you could simple check the container's log.
+
+This example is runing a Gctf test but you could of course run the test you want.
 
 <!--
 ## Troubleshooting
