@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -xe
 
 S_USER=scipionuser
 S_USER_HOME=/home/${S_USER}
@@ -14,4 +14,14 @@ echo -e "$USER_PASS\n$USER_PASS" | passwd $S_USER
 
 chown $S_USER:$S_USER $S_USER_HOME/scipion3/software/em
 
+chown munge.munge /etc/munge/munge.key
+
+service munge start
+
+mkdir -p ${S_USER_HOME}/ScipionUserData/data
+chown -R $S_USER:$S_USER $S_USER_HOME/.config
+chown -R $S_USER:$S_USER $S_USER_HOME/ScipionUserData
+chown $S_USER:$S_USER $S_USER_HOME/scipion3/config/hosts.conf
+
 su -c ./docker-entrypoint.sh $S_USER
+
