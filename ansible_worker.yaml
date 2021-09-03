@@ -40,9 +40,6 @@
     apt:
       name: ['nvidia-driver-440', 'nvidia-cuda-dev']
 
-  - name: Reboot worker
-    reboot:
-
   roles:
   - role: indigo-dc.nfs
     nfs_mode: 'client'
