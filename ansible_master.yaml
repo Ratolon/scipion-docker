@@ -3,22 +3,6 @@
     vnode_prefix: scipion-wn-
     vnode_master: scipion-master
 
-    docker_runtime: |
-      {
-        "mtu": 1442
-      }
-    docker_runtime_nvidia: |
-      {
-        "mtu": 1442,
-        "runtimes": {
-          "nvidia": {
-            "path": "/usr/bin/nvidia-container-runtime",
-            "runtimeArgs": []
-          }
-        },
-        "default-runtime": "nvidia"
-      }
-
   pre_tasks:
   - name: Create scipionuser group
     group:
@@ -33,16 +17,10 @@
       shell: /bin/bash
       group: scipionuser
 
-  - name: Add NVIDIA PPA
-    apt_repository:
-      repo: ppa:graphics-drivers/ppa
-      update_cache: yes
-
-  - name: Install nvidia-driver package
-    apt:
-      name: ['nvidia-driver-440', 'nvidia-cuda-dev']
-
   roles:
+  - role: nvidia.nvidia_driver
+    branch: 440
+    packages: ['nvidia-driver-440', 'nvidia-cuda-dev']
   - role: indigo-dc.nfs
     nfs_mode: 'server'
     nfs_exports: [{path: "/home/scipionuser/ScipionUserData", export: "{{ vnode_prefix }}*.localdomain(fsid=0,rw,async,no_root_squash,no_subtree_check,insecure)"}]
@@ -59,6 +37,7 @@
     slurm_wn_gres_tpes: "gpu"
     slurm_wn_gres_conf: "AutoDetect=nvml"
     slurm_user_id: 1052
+  - role: grycap.docker
 
 # Put here your Ansible recipes to configure the nodes
 
@@ -70,78 +49,12 @@
       state: present
       update_cache: yes
 
-  - name: Add docker GPG key
-    apt_key:
-      url: https://download.docker.com/linux/ubuntu/gpg
-      state: present
-  - name: Get release name
-    shell: lsb_release -cs
-    register: release_name
-  - name: Add docker registry
-    apt_repository: repo='deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ release_name.stdout }} stable' state=present
-
-  - name: Install docker
-    package:
-      name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
-      state: present
-
-  - name: Install pip docker
-    pip:
-      name: docker
-
-  - name: Test GPU support
-    command: nvidia-smi
-    register: gpu_support
-    ignore_errors: yes
-
-  - name: Set mtu value to docker network
-    copy:
-      content: "{{ docker_runtime }}"
-      dest: /etc/docker/daemon.json
-
-  - name: Start docker service
-    service:
-      name: docker
-      state: restarted
-
   - name: Get release name
     shell: . /etc/os-release;echo $ID$VERSION_ID
     register: distribution
 
   - name: Add scipionuser to docker group and change shell
     shell: usermod --shell /bin/bash -aG docker scipionuser
-
-  - name: All gpu dependent tasks
-    block:
-    - name: Add nvidia docker runtime source
-      shell: 'curl -s -L https://nvidia.github.io/nvidia-docker/{{ distribution.stdout }}/nvidia-docker.list | tee /etc/apt/sources.list.d/nvidia-docker.list'
-
-    - name: Add nvidia docker runtime GPG 1/2
-      apt_key:
-        url: https://nvidia.github.io/nvidia-docker/gpgkey
-        state: present
-
-    - name: Add nvidia docker runtime GPG 2/2
-      apt_key:
-        url: https://nvidia.github.io/nvidia-container-runtime/gpgkey
-        state: present
-
-    - name: Install nvidia-container-toolkit and nvidia-container-runtime
-      apt:
-        name: ['nvidia-container-toolkit', 'nvidia-container-runtime']
-        update_cache: yes
-
-    - name: Set nvidia as default docker runtime
-      copy:
-        content: "{{ docker_runtime_nvidia }}"
-        dest: /etc/docker/daemon.json
-
-    - name: Restart docker
-      service:
-        name: docker
-        state: restarted
-
-    when: gpu_support is success
 
   - name: Run Scipion master container
     #shell: docker run -d --name=scipionmaster --hostname=scipion-master --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="abc" -e USER_PASS="abc" -e CRYOSPARC_LICENSE="a3dc0cc0-3181-11ea-84d0-8b3771c7f13b" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -v /usr/local/etc/slurm.conf:/usr/local/etc/slurm.conf -v /usr/local/etc/gres.conf:/usr/local/etc/gres.conf -v /etc/munge/munge.key:/etc/munge/munge.key --add-host scipion-master:ip ldelcano/scipion-master
