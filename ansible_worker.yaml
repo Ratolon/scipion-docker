@@ -139,6 +139,6 @@
 
   - name: pull scipion-worker image
     docker_image:
-      name: ldelcano/scipion-worker:slurm
+      name: rinchen.cnb.csic.es/eosc-synergy/scipion-worker:latest
       source: pull
 
