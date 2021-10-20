@@ -116,7 +116,7 @@ USER root
 RUN chown ${S_USER}.${S_USER} ${S_USER_HOME}/install_cryosparc_master.sh
 RUN chmod +x ${S_USER_HOME}/install_cryosparc_master.sh
 USER ${S_USER}
-#RUN cd ${S_USER_HOME} && ${S_USER_HOME}/install_cryosparc_master.sh; exit 0
+RUN cd ${S_USER_HOME} && ${S_USER_HOME}/install_cryosparc_master.sh; exit 0
 
 USER root
 #######################
