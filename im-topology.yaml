@@ -24,10 +24,10 @@ topology_template:
       type: string
       description: Instance type of Scipion master node
       required: yes
-      #default: 'g1.c08r31-K20m' #IISAS-FedCloud GPU
-      #default: 'm1.medium' #IISAS-FedCloud no GPU
+      default: 'g1.c08r30-K20m' #IISAS-FedCloud GPU
+      #default: 'm1.huge' #IISAS-FedCloud no GPU
       #default: 'cm4.large' #IFCA no GPU
-      default: 'g7.8xlarge' #IFCA GPU
+      #default: 'g7.8xlarge' #IFCA GPU
       #default: 'hpc.8core-64ram-nvidia-1080-glados' #CESNET GPU
       #default: 'hpc.64core-512ram-nvidia-t4' # CESNET GPU
       #default: 'standard.medium' #CESNET no GPU
@@ -35,10 +35,10 @@ topology_template:
     worker_instance_type:
       type: string
       description: Instance type of Scipion worker node
-      required: yes
-      #default: 'm1.xlarge' #IISAS-FedCloud
+      required: no
+      default: 'm1.xlarge' #IISAS-FedCloud
       #default: 'g7.8xlarge' #IFCA
-      default: 'cm4.large' #IFCA no GPU
+      #default: 'cm4.large' #IFCA no GPU
       #default: 'standard.medium' #CESNET
       #default: 'hpc.64core-512ram-nvidia-t4' # CESNET GPU
     network_name_pub:
@@ -46,11 +46,13 @@ topology_template:
       description: Public network name (only needed for CESNET = public-muni-147-251-21-GROUP)
       required: no
       #default: 'public-muni-147-251-21-GROUP'
+      default: ''
     network_name_priv:
       type: string
       description: Private network name (only needed for CESNET = group-project-network)
       required: no
       #default: 'group-project-network'
+      default: ''
     disk_size:
       type: scalar-unit.size
       description: Size of the disk to be attached to the FE instance
@@ -114,8 +116,8 @@ topology_template:
             instance_type: { get_input: master_instance_type }
         os:
           properties:
-            #image: 'ost://cloud.ui.savba.sk:5000/2a1c0a0e-529a-4b44-894f-32a4e3f6357e' #IISAS-FedCloud
-            image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
+            image: 'ost://cloud.ui.savba.sk:5000/4ce3b593-9676-4a73-b0d5-7662e0d66d51' #IISAS-FedCloud
+            #image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
             #image: 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8' #CESNET NO GPU
             #image: 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601' #CESNET GPU
             type: linux
@@ -145,6 +147,10 @@ topology_template:
         nfs_role:
           file: indigo-dc.nfs,master
           type: tosca.artifacts.AnsibleGalaxy.role
+        docker_role:
+          file: grycap.docker,master
+          type: tosca.artifacts.AnsibleGalaxy.role
+
     lrms_wn:
       type: tosca.nodes.indigo.Compute
       capabilities:
@@ -159,8 +165,8 @@ topology_template:
             instance_type: { get_input: worker_instance_type }
         os:
           properties:
-            #image: 'ost://cloud.ui.savba.sk:5000/2a1c0a0e-529a-4b44-894f-32a4e3f6357e' #IISAS-FedCloud
-            image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
+            image: 'ost://cloud.ui.savba.sk:5000/4ce3b593-9676-4a73-b0d5-7662e0d66d51' #IISAS-FedCloud
+            #image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
             #image: 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601' #CESNET GPU
             #image: 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8' #CESNET NO GPU
     wn:
@@ -179,6 +185,9 @@ topology_template:
           type: tosca.artifacts.AnsibleGalaxy.role
         nfs_role:
           file: indigo-dc.nfs,master
+          type: tosca.artifacts.AnsibleGalaxy.role
+        docker_role:
+          file: grycap.docker,master
           type: tosca.artifacts.AnsibleGalaxy.role
     my_block_storage:
       type: BlockStorage
