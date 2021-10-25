@@ -35,7 +35,7 @@
     slurm_wn_gres_conf: "AutoDetect=nvml"
     slurm_user_id: 1052
   - role: grycap.docker
-    docker_config_values: {"docker_runtime": {"mtu": 1442}}
+    docker_config_values: {"mtu": 1442}
     docker_nvidia_support: true
     docker_nvidia_options:
       - default-runtime: nvidia
