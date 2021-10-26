@@ -17,13 +17,6 @@
       shell: /bin/bash
       group: scipionuser
 
-  - name: adding scipionuser to group docker
-    user:
-      name: 'scipionuser'
-      groups: docker
-      shell: /bin/bash
-      append: yes
-
   roles:
   - role: indigo-dc.nfs
     nfs_mode: 'server'
@@ -66,9 +59,13 @@
     shell: . /etc/os-release;echo $ID$VERSION_ID
     register: distribution
 
-  - name: Add scipionuser to docker group and change shell
-    shell: usermod --shell /bin/bash -aG docker scipionuser
-
+  - name: adding scipionuser to group docker
+    user:
+      name: 'scipionuser'
+      groups: docker
+      shell: /bin/bash
+      append: yes
+      
   - name: Run Scipion master container
     #shell: docker run -d --name=scipionmaster --hostname=scipion-master --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="abc" -e USER_PASS="abc" -e CRYOSPARC_LICENSE="a3dc0cc0-3181-11ea-84d0-8b3771c7f13b" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -v /usr/local/etc/slurm.conf:/usr/local/etc/slurm.conf -v /usr/local/etc/gres.conf:/usr/local/etc/gres.conf -v /etc/munge/munge.key:/etc/munge/munge.key --add-host scipion-master:ip rinchen.cnb.csic.es/eosc-synergy/scipion-master:latest
     docker_container:
