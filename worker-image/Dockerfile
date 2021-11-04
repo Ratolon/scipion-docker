@@ -86,13 +86,19 @@ USER ${S_USER}
 # Install plugins for Scipion
 COPY plugin-list.txt ${S_USER_HOME}/
 RUN for pl in $(cat ${S_USER_HOME}/plugin-list.txt); do ${S_USER_HOME}/scipion3/scipion3 installp -p $pl -j $(nproc); done
-RUN  rm ${S_USER_HOME}/scipion3/software/em/*gz
 
 # Install deeplearningtoolkit
 RUN ${S_USER_HOME}/scipion3/scipion3 installb deepLearningToolkit -j $(nproc)
+RUN  rm ${S_USER_HOME}/scipion3/software/em/*gz
+
+# Set the correct binary versions (this has to be reviewd to make it cleaner)
 
 # Modify MOTIONCOR2_BIN variable to point to cuda10.2 binary
-RUN echo MOTIONCOR2_BIN=${S_USER_HOME}/software/em/motioncor2-1.4.0/bin/MotionCor2_1.4.0_Cuda102 >> ${S_USER_HOME}/scipion3/config/scipion.conf
+RUN echo MOTIONCOR2_BIN=${S_USER_HOME}/scipion3/software/em/motioncor2-1.4.4/bin/MotionCor2_1.4.4_Cuda102-08-11-2021 >> ${S_USER_HOME}/scipion3/config/scipion.conf
+
+# Install relion-3.1.1
+RUN ${S_USER_HOME}/scipion3/scipion3 installb relion-3.1.3 -j $(nproc)
+RUN echo RELION_HOME=${S_USER_HOME}/scipion3/software/em/relion-3.1.3 >> ${S_USER_HOME}/scipion3/config/scipion.conf
 
 USER root
 # run docker-entrypoint.sh
