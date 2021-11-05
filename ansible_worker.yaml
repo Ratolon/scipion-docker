@@ -1,21 +1,6 @@
 ---
 - vars:
     vnode_master: scipion-master
-    docker_runtime: |
-      {
-        "mtu": 1442
-      }
-    docker_runtime_nvidia: |
-      {
-        "mtu": 1442,
-        "runtimes": {
-          "nvidia": {
-            "path": "/usr/bin/nvidia-container-runtime",
-            "runtimeArgs": []
-          }
-        },
-        "default-runtime": "nvidia"
-      }
 
   pre_tasks:
   - name: Create scipionuser group
@@ -31,15 +16,6 @@
       shell: /bin/bash
       group: scipionuser
 
-  - name: Add NVIDIA PPA
-    apt_repository:
-      repo: ppa:graphics-drivers/ppa
-      update_cache: yes
-
-  - name: Install nvidia-driver package
-    apt:
-      name: ['nvidia-driver-440', 'nvidia-cuda-dev']
-
   roles:
   - role: indigo-dc.nfs
     nfs_mode: 'client'
@@ -54,6 +30,10 @@
     slurm_wn_gres_tpes: "gpu"
     slurm_wn_gres_conf: "AutoDetect=nvml"
     slurm_user_id: 1052
+  - role: grycap.docker
+    docker_config_values: {"mtu": 1442}
+    docker_nvidia_support: true
+    docker_nvidia_driver_version: 440
 
 # Put here your Ansible recipes to configure the nodes
 
@@ -64,78 +44,16 @@
       state: present
       update_cache: yes
 
-  - name: Add docker GPG key
-    apt_key:
-      url: https://download.docker.com/linux/ubuntu/gpg
-      state: present
-  - name: Get release name
-    shell: lsb_release -cs
-    register: release_name
-  - name: Add docker registry
-    apt_repository: repo='deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ release_name.stdout }} stable' state=present
-
-  - name: Install docker
-    package:
-      name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
-      state: present
-
-  - name: Install pip docker
-    pip:
-      name: docker
-
-  - name: Test GPU support
-    command: nvidia-smi
-    register: gpu_support
-    ignore_errors: yes
-
-  - name: Set mtu value to docker network
-    copy:
-      content: "{{ docker_runtime }}"
-      dest: /etc/docker/daemon.json
-
-  - name: Start docker service
-    service:
-      name: docker
-      state: restarted
-
   - name: Get release name
     shell: . /etc/os-release;echo $ID$VERSION_ID
     register: distribution
 
-  - name: Add scipionuser to docker group and change shell
-    shell: usermod --shell /bin/bash -aG docker scipionuser
-
-  - name: All gpu dependent tasks
-    block:
-    - name: Add nvidia docker runtime source
-      shell: 'curl -s -L https://nvidia.github.io/nvidia-docker/{{ distribution.stdout }}/nvidia-docker.list | tee /etc/apt/sources.list.d/nvidia-docker.list'
-
-    - name: Add nvidia docker runtime GPG 1/2
-      apt_key:
-        url: https://nvidia.github.io/nvidia-docker/gpgkey
-        state: present
-
-    - name: Add nvidia docker runtime GPG 2/2
-      apt_key:
-        url: https://nvidia.github.io/nvidia-container-runtime/gpgkey
-        state: present
-
-    - name: Install nvidia-container-toolkit and nvidia-container-runtime
-      apt:
-        name: ['nvidia-container-toolkit', 'nvidia-container-runtime']
-        update_cache: yes
-
-    - name: Set nvidia as default docker runtime
-      copy:
-        content: "{{ docker_runtime_nvidia }}"
-        dest: /etc/docker/daemon.json
-
-    - name: Restart docker
-      service:
-        name: docker
-        state: restarted
-
-    when: gpu_support is success
+  - name: adding scipionuser to docker group
+    user:
+      name: 'scipionuser'
+      groups: docker
+      shell: /bin/bash
+      append: yes
 
   - name: pull scipion-worker image
     docker_image:
