@@ -39,9 +39,6 @@
     slurm_wn_nodenames: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_hostname")|list if "lrms_wn" in groups else [] }}'
     slurm_wn_cpus: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_wn''].cpu_count_min|[0]")}}'
     slurm_wn_mem: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_wn''].memory_size_min|[0]")}}'
-    slurm_wn_gres: "{{ slurm_wn_gres }}"
-    slurm_wn_gres_tpes: "{{ slurm_wn_gres_tpes }}"
-    slurm_wn_gres_conf: "{{ slurm_wn_gres_conf }}"
     slurm_user_id: 1052
   - role: grycap.docker
     docker_config_values: {"mtu": 1442}

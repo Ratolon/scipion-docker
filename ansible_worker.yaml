@@ -26,9 +26,6 @@
     slurm_server_ip: "{{ slurm_front_end_ip }}"
     slurm_wn_ips: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_default_ipv4.address")|list if "lrms_wn" in groups else [] }}'
     slurm_wn_nodenames: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_hostname")|list if "lrms_wn" in groups else [] }}'
-    slurm_wn_gres: "gpu:1"
-    slurm_wn_gres_tpes: "gpu"
-    slurm_wn_gres_conf: "AutoDetect=nvml"
     slurm_user_id: 1052
   - role: grycap.docker
     docker_config_values: {"mtu": 1442}
