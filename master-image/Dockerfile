@@ -14,7 +14,7 @@ ARG S_USER=scipionuser
 ARG S_USER_HOME=/home/${S_USER}
 ARG CRYOSPARC_LICENSE=a0e74f16-3181-11ea-84b9-d7e876129116
 
-ARG GPU
+ARG NOGPU
 
 USER root
 #######################
@@ -106,19 +106,11 @@ USER ${S_USER}
 COPY hosts.conf ${S_USER_HOME}/scipion3/config/
 
 # Install cryosparc
-USER ${S_USER}
-RUN if [ -z "$GPU" ]; then mkdir ${S_USER_HOME}/cryosparc3; else echo "No cryosparc because no gpu in the server"; fi
-RUN if [ -z "$GPU" ]; then curl -L https://get.cryosparc.com/download/master-v${CRYOSPARC_VERSION}/${CRYOSPARC_LICENSE} -o ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz; else echo "No cryosparc because no gpu in the server"; fi
-RUN if [ -z "$GPU" ]; then curl -L https://get.cryosparc.com/download/worker-v${CRYOSPARC_VERSION}/$CRYOSPARC_LICENSE -o ${S_USER_HOME}/cryosparc3/cryosparc_worker.tar.gz; else echo "No cryosparc because no gpu in the server"; fi
-RUN if [ -z "$GPU" ]; then tar -xf ${S_USER_HOME}/cryosparc3/cryosparc_master.tar.gz -C ${S_USER_HOME}/cryosparc3; else echo "No cryosparc because no gpu in the server"; fi
-RUN if [ -z "$GPU" ]; then tar -xf ${S_USER_HOME}/cryosparc3/cryosparc_worker.tar.gz -C ${S_USER_HOME}/cryosparc3; else echo "No cryosparc because no gpu in the server"; fi
-RUN if [ -z "$GPU" ]; then rm ${S_USER_HOME}/cryosparc3/cryosparc_*.tar.gz; else echo "No cryosparc because no gpu in the server"; fi
-COPY install_cryosparc_master.sh ${S_USER_HOME}/
 USER root
-RUN if [ -z "$GPU" ]; then chown ${S_USER}.${S_USER} ${S_USER_HOME}/install_cryosparc_master.sh; else echo "No cryosparc because no gpu in the server"; fi
-RUN if [ -z "$GPU" ]; then chmod +x ${S_USER_HOME}/install_cryosparc_master.sh; else echo "No cryosparc because no gpu in the server"; fi
+COPY install_cryosparc_master.sh ${S_USER_HOME}/
+RUN chmod +x ${S_USER_HOME}/install_cryosparc_master.sh
 USER ${S_USER}
-RUN if [ -z "$GPU" ]; then cd ${S_USER_HOME} && ${S_USER_HOME}/install_cryosparc_master.sh; else echo "No cryosparc because no gpu in the server"; fi
+RUN if [ -z "$NOGPU" ]; ${S_USER_HOME}/install_cryosparc_master.sh; then echo "No cryosparc because no gpu in the server"; fi
 
 USER root
 #######################
