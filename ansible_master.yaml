@@ -67,12 +67,12 @@
       shell: /bin/bash
       append: yes
 
-#  - name: Move /var/lib/docker folder to external volume
-#    file:
-#      path: /var/lib/docker
-#      src: /home/scipionuser/volume-data/docker
-#      state: link
-#      force: yes
+  - name: Move /var/lib/docker folder to external volume
+    file:
+      path: /var/lib/docker
+      src: /home/scipionuser/volume-data/docker
+      state: link
+      force: yes
       
   - name: Run Scipion master container
     #shell: docker run -d --name=scipionmaster --hostname=scipion-master --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="abc" -e USER_PASS="abc" -e CRYOSPARC_LICENSE="a3dc0cc0-3181-11ea-84d0-8b3771c7f13b" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -v /usr/local/etc/slurm.conf:/usr/local/etc/slurm.conf -v /usr/local/etc/gres.conf:/usr/local/etc/gres.conf -v /etc/munge/munge.key:/etc/munge/munge.key --add-host scipion-master:ip rinchen.cnb.csic.es/eosc-synergy/scipion-master:latest
