@@ -71,7 +71,7 @@
   - name: Copy /var/lib/docker folder to external volume
     copy:
       src: /var/lib/docker
-      dst: /home/scipionuser/volume-data/
+      dest: /home/scipionuser/volume-data/docker
   - name: Remove /var/lib/docker folder
     file:
       path: /var/lib/docker
