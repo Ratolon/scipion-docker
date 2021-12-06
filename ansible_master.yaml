@@ -68,10 +68,11 @@
       append: yes
 
 # Move /var/lib/docker to external volume and create symlink
-  - name: Copy /var/lib/docker folder to external volume
+  - name: Copy remotely /var/lib/docker folder to external volume
     copy:
       src: /var/lib/docker
-      dest: /home/scipionuser/volume-data/docker
+      dest: /home/scipionuser/volume-data
+      remote_src: yes
   - name: Remove /var/lib/docker folder
     file:
       path: /var/lib/docker
