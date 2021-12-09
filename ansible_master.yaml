@@ -42,7 +42,7 @@
     slurm_wn_mem: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_wn''].memory_size_min|[0]")}}'
     slurm_user_id: 1052
   - role: grycap.docker
-    docker_config_values: {"mtu": 1442}
+    docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
     docker_nvidia_support: true
     docker_nvidia_driver_version: 440
 
