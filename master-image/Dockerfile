@@ -112,6 +112,10 @@ RUN chmod +x ${S_USER_HOME}/install_cryosparc_master.sh
 USER ${S_USER}
 RUN if [ -z "$NOGPU" ]; ${S_USER_HOME}/install_cryosparc_master.sh; then echo "No cryosparc because no gpu in the server"; fi
 
+# Install cryosparc plugin
+RUN ${S_USER_HOME}/scipion3/scipion3 installb pyem
+RUN ${S_USER_HOME}/scipion3/scipion3 installp -p scipion-em-cryosparc2
+
 USER root
 #######################
 
