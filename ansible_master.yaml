@@ -31,7 +31,7 @@
   roles:
   - role: indigo-dc.nfs
     nfs_mode: 'server'
-    nfs_exports: [{path: "/home/scipionuser/volume-data", export: "{{ vnode_prefix }}*.localdomain(fsid=0,rw,async,no_root_squash,no_subtree_check,insecure)"}]
+    nfs_exports: [{path: "/home/scipionuser/ScipionUserData", export: "{{ vnode_prefix }}*.localdomain(fsid=0,rw,async,no_root_squash,no_subtree_check,insecure)"}]
   - role: grycap.slurm
     slurm_type_of_node: 'front'
     slurm_server_name: "{{ vnode_master }}"
@@ -42,7 +42,8 @@
     slurm_wn_mem: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_wn''].memory_size_min|[0]")}}'
     slurm_user_id: 1052
   - role: grycap.docker
-    docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
+    #docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
+    docker_config_values: {"mtu": 1442}
     docker_nvidia_support: true
     docker_nvidia_driver_version: 440
 
@@ -84,7 +85,7 @@
         CRYOSPARC_LICENSE: "{{ cryosparc_license }}"
       volumes:
         - /tmp/.X11-unix/X0:/tmp/.X11-unix/X0
-        - /home/scipionuser/volume-data:/home/scipionuser/volume-data
+        - /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData
         - /usr/local/etc/slurm.conf:/usr/local/etc/slurm.conf
         - /usr/local/etc/gres.conf:/usr/local/etc/gres.conf
         - /etc/munge/munge.key:/etc/munge/munge.key
