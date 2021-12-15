@@ -44,7 +44,7 @@
     slurm_vnode_prefix: "{{ vnode_prefix }}"
     slurm_wn_nodenames: '{{ groups["lrms_wn"]|map("extract", hostvars, "ansible_hostname")|list if "lrms_wn" in groups else [] }}'
     slurm_wn_cpus: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_wn''].cpu_count_min|[0]")}}'
-    slurm_wn_mem: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_wn''].memory_size_min|[0]")}}'
+    slurm_wn_mem: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_wn''].memory_size_min|[0]") / 1048576}}'
     slurm_user_id: 1052
 
 # Put here your Ansible recipes to configure the nodes
