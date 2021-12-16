@@ -20,11 +20,49 @@ topology_template:
       description: Cryosparc license id
       required: no
       default: 'a3dc0cc0-3181-11ea-84d0-8b3771c7f13b'
-    master_instance_type: # Need GPU to make cryosparc work
-      type: string
-      description: Instance type of Scipion master node
+    num_gpus_master:
+      type: integer
+      description: Number of GPUs to assing to the master
       required: yes
-      default: 'g1.c08r30-K20m' #IISAS-FedCloud GPU
+      default: 1
+    num_cpus_master:
+      type: integer
+      description: Numbers of CPUs to assign to the master
+      required: yes
+      default: 8
+      constraints:
+      - valid_values: [ 2, 4, 8, 16, 32, 64 ]
+    mem_size_master:
+      type: scalar-unit.size
+      description: Ammount of RAM (GB) to assign to the master
+      default: 30 GB
+      required: yes
+      constraints:
+      - valid_values: [ 4 GB, 8 GB, 16 GB, 32 GB, 64 GB, 128 GB ]
+    num_gpus_worker:
+      type: integer
+      description: Number of GPUs to assing to the worker
+      required: yes
+      default: 1
+    num_cpus_worker:
+      type: integer
+      description: Numbers of CPUs to assign to the worker
+      required: yes
+      default: 8
+      constraints:
+      - valid_values: [ 2, 4, 8, 16, 32, 64 ]
+    mem_size_worker:
+      type: scalar-unit.size
+      description: Ammount of RAM (GB) to assign to the worker
+      default: 30 GB
+      required: yes
+      constraints:
+      - valid_values: [ 4 GB, 8 GB, 16 GB, 32 GB, 64 GB, 128 GB ]
+    #master_instance_type: # Need GPU to make cryosparc work
+    #  type: string
+    #  description: Instance type of Scipion master node
+    #  required: yes
+    #  default: 'g1.c08r30-K20m' #IISAS-FedCloud GPU
       #default: 'm1.huge' #IISAS-FedCloud no GPU
       #default: 'cm4.large' #IFCA no GPU
       #default: 'g7.8xlarge' #IFCA GPU
@@ -32,13 +70,13 @@ topology_template:
       #default: 'hpc.64core-512ram-nvidia-t4' # CESNET GPU
       #default: 'standard.medium' #CESNET no GPU
 
-    worker_instance_type:
-      type: string
-      description: Instance type of Scipion worker node
-      required: no
-      default: 'm1.xlarge' #IISAS-FedCloud
-      #default: 'g7.8xlarge' #IFCA
-      #default: 'cm4.large' #IFCA no GPU
+    #worker_instance_type:
+     # type: string
+     # description: Instance type of Scipion worker node
+     # required: no
+     # default: 'm1.huge' #IISAS-FedCloud
+     # #default: 'g7.8xlarge' #IFCA
+     # #default: 'cm4.large' #IFCA no GPU
       #default: 'standard.medium' #CESNET
       #default: 'hpc.64core-512ram-nvidia-t4' # CESNET GPU
     network_name_pub:
@@ -62,7 +100,7 @@ topology_template:
     workers_num:
       type: integer
       description: Number of worker nodes in cluster
-      default: 0
+      default: 1
       constraints:
         - valid_values: [ 0, 1 ]
 
@@ -113,10 +151,15 @@ topology_template:
                 source: 5904
         host:
           properties:
-            instance_type: { get_input: master_instance_type }
+            #instance_type: { get_input: master_instance_type }
+            num_gpus: { get_input: num_gpus_master }
+            num_cpus: { get_input: num_cpus_master }
+            mem_size: { get_input: mem_size_master }
+            gpu_vendor: 'nvidia'
+
         os:
           properties:
-            image: 'ost://cloud.ui.savba.sk:5000/4ce3b593-9676-4a73-b0d5-7662e0d66d51' #IISAS-FedCloud
+            image: 'ost://cloud.ui.savba.sk:5000/f7d9d68a-7283-4670-9dc9-2caa77ede59c' #IISAS-FedCloud
             #image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
             #image: 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8' #CESNET NO GPU
             #image: 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601' #CESNET GPU
@@ -162,10 +205,14 @@ topology_template:
             dns_name: scipion-wn-#N#
         host:
           properties:
-            instance_type: { get_input: worker_instance_type }
+            #instance_type: { get_input: worker_instance_type }
+            num_gpus: { get_input: num_gpus_worker }
+            num_cpus: { get_input: num_cpus_worker }
+            mem_size: { get_input: mem_size_worker }
+            gpu_vendor: 'nvidia'
         os:
           properties:
-            image: 'ost://cloud.ui.savba.sk:5000/4ce3b593-9676-4a73-b0d5-7662e0d66d51' #IISAS-FedCloud
+            image: 'ost://cloud.ui.savba.sk:5000/f7d9d68a-7283-4670-9dc9-2caa77ede59c' #IISAS-FedCloud
             #image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
             #image: 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601' #CESNET GPU
             #image: 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8' #CESNET NO GPU
