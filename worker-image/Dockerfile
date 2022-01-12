@@ -2,7 +2,7 @@ FROM nvidia/cudagl:10.2-devel-ubuntu18.04
 
 ARG S_USER=scipionuser
 ARG S_USER_HOME=/home/${S_USER}
-ARG XMIPP_VERSION=xmippSrc-v3.21.06.1
+ARG XMIPP_VERSION=xmippSrc-v3.21.09.0
 
 RUN apt update && apt upgrade -y
 
