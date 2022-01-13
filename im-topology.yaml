@@ -39,6 +39,12 @@ topology_template:
       required: yes
       constraints:
       - valid_values: [ 4 GB, 8 GB, 16 GB, 32 GB, 64 GB, 128 GB ]
+    workers_num:
+      type: integer
+      description: Number of worker nodes in cluster
+      default: 0
+      constraints:
+        - valid_values: [ 0, 1 ]
     num_gpus_worker:
       type: integer
       description: Number of GPUs to assing to the worker
@@ -97,12 +103,6 @@ topology_template:
       default: 100 GB
       constraints:
         - valid_values: [ 100 GB, 500 GB, 1 TB, 5 TB, 8TB ]
-    workers_num:
-      type: integer
-      description: Number of worker nodes in cluster
-      default: 0
-      constraints:
-        - valid_values: [ 0, 1 ]
 
   node_templates:
     pub_network:
@@ -241,5 +241,5 @@ topology_template:
       properties:
         size: { get_input: disk_size }
   outputs:
-    master_node_ip:
+    service_url:
       value: { concat: [ 'https://', get_attribute: [ lrms_server, public_address, 0 ], ':5904/?resize=remote' ] }
