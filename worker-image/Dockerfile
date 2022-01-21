@@ -4,13 +4,13 @@ ARG S_USER=scipionuser
 ARG S_USER_HOME=/home/${S_USER}
 ARG XMIPP_VERSION=xmippSrc-v3.21.09.0
 
-RUN apt update && apt upgrade -y
+RUN apt-get update && apt-get upgrade -y
 
-RUN apt update && DEBIAN_FRONTEND="noninteractive" apt install -y \
+RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y \
 	tzdata
 
 # Install necessary packages
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 	bash \
 	make \
 	curl \
@@ -24,14 +24,14 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
 # bison, flex, ca-certificates, git ??
 
 # Required by Scipion
-RUN apt update && apt install -y \
+RUN apt-get update && apt-get install -y \
 	libxv1 \
 	openjdk-8-jdk \
 	libfftw3-dev \
 	libtiff-dev
 
 # Required by Scipion for conda installation
-RUN apt-get -y install sudo wget gcc g++ libopenmpi-dev mesa-utils openssh-client cmake libnss3 libfontconfig1 libxrender1 libxtst6 xterm libasound2 libglu1 libxcursor1 libdbus-1-3 libxkbcommon-x11-0 libhdf5-dev
+RUN apt-get -y --no-install-recommends install sudo wget gcc g++ libopenmpi-dev mesa-utils openssh-client cmake libnss3 libfontconfig1 libxrender1 libxtst6 xterm libasound2 libglu1 libxcursor1 libdbus-1-3 libxkbcommon-x11-0 libhdf5-dev
 
 # Clean apt
 RUN rm -rf /var/lib/apt/lists/*
@@ -58,7 +58,7 @@ RUN ["/bin/bash", "-c", "echo $PATH"]
 
 
 # Install Scipion
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${S_USER_HOME}/miniconda.sh
+RUN wget --progress=dot:giga https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${S_USER_HOME}/miniconda.sh
 RUN bash ${S_USER_HOME}/miniconda.sh -b
 RUN ${S_USER_HOME}/miniconda3/bin/conda init
 RUN ["/bin/bash", "-ci" , "python3 -m pip install scipion-installer"]
@@ -66,7 +66,7 @@ RUN ["/bin/bash", "-ci" , "cd ${S_USER_HOME} && python3 -m scipioninstaller ${S_
 
 # Install xmipp without native compilation flags
 RUN ["/bin/bash", "-c" , "${S_USER_HOME}/scipion3/scipion3 installp -p scipion-em-xmipp -j $(nproc) --noBin"]
-RUN wget http://scipion.cnb.csic.es/downloads/scipion/software/em/${XMIPP_VERSION}.tgz -O ${S_USER_HOME}/scipion3/software/em/${XMIPP_VERSION}.tgz
+RUN wget --progress=dot:giga http://scipion.cnb.csic.es/downloads/scipion/software/em/${XMIPP_VERSION}.tgz -O ${S_USER_HOME}/scipion3/software/em/${XMIPP_VERSION}.tgz
 RUN tar xfz ${S_USER_HOME}/scipion3/software/em/${XMIPP_VERSION}.tgz -C ${S_USER_HOME}/scipion3/software/em/
 RUN ["/bin/bash", "-c" , "cd ${S_USER_HOME}/scipion3/software/em/${XMIPP_VERSION} && ${S_USER_HOME}/scipion3/scipion3 run ${S_USER_HOME}/scipion3/software/em/${XMIPP_VERSION}/xmipp noAsk config"]
 RUN sed -i 's/-mtune=native -march=native //g' ${S_USER_HOME}/scipion3/software/em/${XMIPP_VERSION}/xmipp.conf
@@ -89,7 +89,6 @@ RUN for pl in $(cat ${S_USER_HOME}/plugin-list.txt); do ${S_USER_HOME}/scipion3/
 
 # Install deeplearningtoolkit
 RUN ${S_USER_HOME}/scipion3/scipion3 installb deepLearningToolkit -j $(nproc)
-RUN  rm ${S_USER_HOME}/scipion3/software/em/*gz
 
 # Set the correct binary versions (this has to be reviewd to make it cleaner)
 
@@ -100,11 +99,10 @@ RUN echo MOTIONCOR2_BIN=${S_USER_HOME}/scipion3/software/em/motioncor2-1.4.4/bin
 RUN ${S_USER_HOME}/scipion3/scipion3 installb relion-3.1.3 -j $(nproc)
 RUN echo RELION_HOME=${S_USER_HOME}/scipion3/software/em/relion-3.1.3 >> ${S_USER_HOME}/scipion3/config/scipion.conf
 
-USER root
-# run docker-entrypoint.sh
-COPY docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint.sh
+# Remove tar files
+RUN  rm ${S_USER_HOME}/scipion3/software/em/*gz
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+RUN mkdir -p ${S_USER_HOME}/ScipionUserData/data
+RUN ln -s ${S_USER_HOME}/ScipionUserData/data ${S_USER_HOME}/scipion3/data
 
-#ENTRYPOINT ["bash"]
+ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
