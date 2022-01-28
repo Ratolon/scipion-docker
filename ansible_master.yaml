@@ -73,7 +73,7 @@
     docker_container:
       name: scipionmaster
       hostname: "{{ vnode_master }}"
-      image: rinchen.cnb.csic.es/eosc-synergy/scipion-master:latest
+      image: rinchen.cnb.csic.es/eosc-synergy/scipion-master:devel
       privileged: yes
       published_ports:
         - 5904:5904
