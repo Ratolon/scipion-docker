@@ -6,11 +6,9 @@ ARG XMIPP_VERSION=xmippSrc-v3.21.09.0
 
 RUN apt-get update && apt-get upgrade -y
 
-RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y \
-	tzdata
-
 # Install necessary packages
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+	tzdata \
 	bash \
 	make \
 	curl \
@@ -20,21 +18,32 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 	python3 \
 	bison \
 	flex \
-	git
-# bison, flex, ca-certificates, git ??
-
+	git \
+	sudo \
+    wget \
+    gcc \
+    g++ \
 # Required by Scipion
-RUN apt-get update && apt-get install -y \
 	libxv1 \
 	openjdk-8-jdk \
 	libfftw3-dev \
-	libtiff-dev
-
-# Required by Scipion for conda installation
-RUN apt-get -y --no-install-recommends install sudo wget gcc g++ libopenmpi-dev mesa-utils openssh-client cmake libnss3 libfontconfig1 libxrender1 libxtst6 xterm libasound2 libglu1 libxcursor1 libdbus-1-3 libxkbcommon-x11-0 libhdf5-dev
-
-# Clean apt
-RUN rm -rf /var/lib/apt/lists/*
+	libtiff-dev \
+    libopenmpi-dev \
+    mesa-utils \
+    openssh-client \
+    cmake \
+    libnss3 \
+    libfontconfig1 \
+    libxrender1 \
+    libxtst6 \
+    xterm \
+    libasound2 \
+    libglu1 \
+    libxcursor1 \
+    libdbus-1-3 \
+    libxkbcommon-x11-0 \
+    libhdf5-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create scipionuser
 RUN groupadd --gid 1042 ${S_USER} && \
@@ -80,8 +89,6 @@ RUN mkdir ${S_USER_HOME}/ScipionUserData
 
 # Disable conda auto activation
 RUN ${S_USER_HOME}/miniconda3/bin/conda config --set auto_activate_base false
-
-USER ${S_USER}
 
 # Install plugins for Scipion
 COPY plugin-list.txt ${S_USER_HOME}/

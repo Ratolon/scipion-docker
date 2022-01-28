@@ -16,9 +16,8 @@ Go to the credentials menu on the right-upper part of the page and add the sites
 Click on the infrastructure wizard for Scipion and fill up the **Input Values** tab with the desired values:
 
  * VNC password
- * Master and worker instance types (depending on site)
+ * RAM, num of CPUs and GPUs for master and workers
  * Cryosparc license
- * Public and private network (this is only needed for CESNET site, othewise do not set it)
  * Size of the disk to  be attached to the cluster
  * Number of worker nodes in the cluster (by default none = single node deployment)
  
@@ -30,54 +29,6 @@ You can check the log to see that everything worked well and once the status be 
 
 [Here](https://scipion-em.github.io/docs/docs/developer/scipion-on-the-egi-federated-cloud) you can find documentation on how to use the service.
 
-## Deploy Scipion using IM web
-
-This portal is very similar to the dashboard but TOSCA must be provided explicitly.
-
-### 1. Go to [IM-web](https://appsgrycap.i3m.upv.es:31443/im-web/) and log in with your account
-### 2. Make sure you have access to the desired platform
-You can open a list your **Credentials** on the left menu.
-If necessary, add a new one by clicking the "Add +" button and entering correct information.
-
-### 3. Paste the TOSCA recipe into the new IM topology
-
-Click the **Topologies** button in the left menu and the **Add +** button at the top.
-
-Paste the TOSCA recipe from the **im-topology.yml** file and save the topology.
-
-**Please change default input values:**
- 
- * VNC password
- * Master and worker instance types (depending on site)
- * Cryosparc license
- * Public and private network (this is only needed for CESNET site, othewise do not set it)
- * Size of the disk to  be attached to the cluster
- * Number of worker nodes in the cluster (by default none = single node deployment)
-
-**Also change image in the os property for lrms_server and lrms_wn sections.**
-
-You can edit the recipe if needed.
-More info about the IM: https://imdocs.readthedocs.io/en/latest/intro.html
-
-### 4. Launch your topology
-
-In the list of topologies launch the one you just created.
-You will be redirected to the **Infrastructures** section on the page.
-Wait for the **configured** status of the topology.
-You can check the log to see that everything worked well.
-
-### 5. Connect to the application
-
-Open info about the VM (**VM IDs** link in a table) and copy the public IP address.
-
-Go to the following link:
-
-    https://paste_the_address:5904
-
-Log in using your password and enjoy working with the Scipion.
-
-![IM - VM info](docs/im-infrastructures-vm-info.png)
-![IM - VM address](docs/im-infrastructures-vm-address.png)
 
 ## Prepare and run Master node manually
 ### Prerequisites (ubuntu packages)
@@ -163,12 +114,12 @@ Note that you will now need to start the docker image with "**--runtime=nvidia**
 
 #### Re-pull the image before running the container
 ```bash
-docker pull ldelcano/scipion-master
+docker pull rinchen.cnb.csic.es/eosc-synergy/scipion-master:devel
 ```
 #### Run
 
 ```
-docker run -d --name=scipionmaster --hostname=scipion-master --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="ROOTPassword" -e USER_PASS="USERPassword" -e MYVNCPASSWORD="VNCPassword" -e CRYOSPARC_LICENSE="YOURSCRYOSPARCLICENSE" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 ldelcano/scipion-master:slurm
+docker run -d --name=scipionmaster --hostname=scipion-master --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="1234" -e USER_PASS="1234" -e MYVNCPASSWORD="1234" -e CRYOSPARC_LICENSE="a0e74f16-3181-11ea-84b9-d7e876129116" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData rinchen.cnb.csic.es/eosc-synergy/scipion-master:devel
 ```
 
 Env var "**USE_DISPLAY**" will create new display (e.g. "**:4**").
@@ -179,6 +130,8 @@ Only one-digit display number is now supported.
 This is also related to the port. Change last digit of the ports "**-p 5904:5904**".
 
 You should also specify the ROOT_PASSWORD, USER_PASSWORD and MYVNCPASSWORD for the docker container as well as a new cryosparc license (there is a default one set up for testing but might give problems if in use in another container).
+
+It is up to you to mount a shared folder for ScipionUserData.
 
 In addition, if you are using default docker runtime, you have to run the container with "**--runtime=nvidia**" parameter.
 
@@ -195,13 +148,13 @@ Both should print output containing information about your nVidia graphics card.
 
 #### Re-pull the image before running the container
 ```bash
-docker pull ldelcano/scipion-worker
+docker pull rinchen.cnb.csic.es/eosc-synergy/scipion-master:devel
 ```
 
 #### Run
 
 ```
-docker run -d --name=scipionworker --hostname=scipion-wn-1 --privileged -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -u scipionuser ldelcano/scipion-worker:slurm /home/scipionuser/scipion3/scipion3 test gctf.tests.test_protocols_gctf.TestGctf
+ddocker run -d --name=scipionworker --hostname=scipion-wn-1 --privileged -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -u scipionuser rinchen.cnb.csic.es/eosc-synergy/scipion-worker:devel "/home/scipionuser/scipion3/scipion3 test gctf.tests.test_protocols_gctf.TestGctf"
 ```
 You can map a folder on the host to the ScipionUserData folder in the container to verify the test or you could simple check the container's log.
 
