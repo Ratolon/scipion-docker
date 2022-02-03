@@ -29,6 +29,7 @@ RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-i
 	libfftw3-dev \
 	libtiff-dev \
     libopenmpi-dev \
+    openmpi-bin \
     mesa-utils \
     openssh-client \
     cmake \
@@ -109,7 +110,6 @@ RUN echo RELION_HOME=${S_USER_HOME}/scipion3/software/em/relion-3.1.3 >> ${S_USE
 # Remove tar files
 RUN  rm ${S_USER_HOME}/scipion3/software/em/*gz
 
-RUN mkdir -p ${S_USER_HOME}/ScipionUserData/data
 RUN ln -s ${S_USER_HOME}/ScipionUserData/data ${S_USER_HOME}/scipion3/data
 
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
