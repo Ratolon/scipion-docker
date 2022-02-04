@@ -50,16 +50,16 @@ RUN cd /tmp && \
         -O https://deac-fra.dl.sourceforge.net/project/libjpeg-turbo/${LIBJPEG_VERSION}/libjpeg-turbo-official_${LIBJPEG_VERSION}_amd64.deb && \
     dpkg -i *.deb && \
     rm -f /tmp/*.deb && \
-    sed -i 's/$host:/unix:/g' /opt/TurboVNC/bin/vncserver
+    sed -i "s/$host:/unix:/g" /opt/TurboVNC/bin/vncserver
 
 ENV PATH ${PATH}:/opt/TurboVNC/bin
 
-RUN curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz | tar -xzf - -C /opt && \
+RUN ["/bin/bash", "-c", "set -o pipefail && curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz | tar -xzf - -C /opt && \
     curl -fsSL https://github.com/novnc/websockify/archive/v${WEBSOCKIFY_VERSION}.tar.gz | tar -xzf - -C /opt && \
     mv /opt/noVNC-${NOVNC_VERSION} /opt/noVNC && \
     mv /opt/websockify-${WEBSOCKIFY_VERSION} /opt/websockify && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
-    cd /opt/websockify && make
+    cd /opt/websockify && make"]
 
 # Install Slurm client
 RUN cd /tmp && \
@@ -72,8 +72,8 @@ RUN cd /tmp && \
 
 # Create Scipion icon
 RUN mkdir ${S_USER_HOME}/Desktop || true
-ADD res/scipion_logo.png ${S_USER_HOME}/scipion3/
-ADD res/Scipion.desktop ${S_USER_HOME}/Desktop/
+COPY res/scipion_logo.png ${S_USER_HOME}/scipion3/
+COPY res/Scipion.desktop ${S_USER_HOME}/Desktop/
 RUN chmod +x ${S_USER_HOME}/scipion3/scipion_logo.png && \
     chmod +x ${S_USER_HOME}/Desktop/Scipion.desktop
 
@@ -89,7 +89,7 @@ no-pam-sessions\n\
 permitted-security-types = TLSVnc, TLSOtp, TLSPlain, TLSNone, X509Vnc, X509Otp, X509Plain, X509None, VNC, OTP, UnixLogin, Plain\
 ' > /etc/turbovncserver-security.conf
 
-ADD res/turbovncserver.conf /etc/turbovncserver.conf
+COPY res/turbovncserver.conf /etc/turbovncserver.conf
 
 # Prepare environment
 RUN mkdir /tmp/.X11-unix || true
