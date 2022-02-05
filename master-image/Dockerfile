@@ -50,16 +50,16 @@ RUN cd /tmp && \
         -O https://deac-fra.dl.sourceforge.net/project/libjpeg-turbo/${LIBJPEG_VERSION}/libjpeg-turbo-official_${LIBJPEG_VERSION}_amd64.deb && \
     dpkg -i *.deb && \
     rm -f /tmp/*.deb && \
-    sed -i "s/$host:/unix:/g" /opt/TurboVNC/bin/vncserver
+    sed -i 's/$host:/unix:/g' /opt/TurboVNC/bin/vncserver
 
 ENV PATH ${PATH}:/opt/TurboVNC/bin
 
-RUN ["/bin/bash", "-c", "set -o pipefail && curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz | tar -xzf - -C /opt && \
+RUN curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz | tar -xzf - -C /opt && \
     curl -fsSL https://github.com/novnc/websockify/archive/v${WEBSOCKIFY_VERSION}.tar.gz | tar -xzf - -C /opt && \
     mv /opt/noVNC-${NOVNC_VERSION} /opt/noVNC && \
     mv /opt/websockify-${WEBSOCKIFY_VERSION} /opt/websockify && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
-    cd /opt/websockify && make"]
+    cd /opt/websockify && make
 
 # Install Slurm client
 RUN cd /tmp && \
