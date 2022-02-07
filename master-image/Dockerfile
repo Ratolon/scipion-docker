@@ -1,6 +1,5 @@
 
-#FROM registry.gitlab.ics.muni.cz:443/eosc-synergy/scipion-docker/base-image:dev
-FROM rinchen.cnb.csic.es/eosc-synergy/scipion-worker:latest
+FROM rinchen.cnb.csic.es/eosc-synergy/scipion-worker:master
 
 ARG TURBOVNC_VERSION=2.2.4
 ARG LIBJPEG_VERSION=1.5.2
@@ -20,47 +19,30 @@ USER root
 #######################
 
 # Install necessary packages - xfce4, term, editor
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 	dbus-x11 \
 	xfce4 \
 	xauth \
 	xterm \
 	konsole \
 	pluma \
-	firefox
-
-# libjpeg-turbo requirements
-RUN apt update && apt install -y --no-install-recommends \
-	cmake \
-	gcc
-
+	firefox \
 # websockify requirements
-RUN apt update && apt install -y --no-install-recommends \
-	python-numpy
-
+	python-numpy \
 # Install useful packages
-RUN apt update && apt install -y --no-install-recommends \
-	git \
 	vim \
-	sudo \
 	mesa-utils \
 	htop \
-	iputils-ping
-
+	iputils-ping \
 # Slurm requirements
-RUN apt update && apt install -y --no-install-recommends \
-        libmunge2 \
-        libpq5 \
-        munge \
-        libmunge-dev \
-        gcc \
-        make \
-        bzip2
+    libmunge2 \
+    libpq5 \
+    munge \
+    libmunge-dev \
+    bzip2 \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --uid 1052 -M slurm
-
-# Clean apt
-RUN rm -rf /var/lib/apt/lists/*
 
 # Install TurboVNC, VirtualGL, noVNC
 RUN cd /tmp && \
@@ -90,34 +72,14 @@ RUN cd /tmp && \
 
 # Create Scipion icon
 RUN mkdir ${S_USER_HOME}/Desktop || true
-ADD res/scipion_logo.png ${S_USER_HOME}/scipion3/
-ADD res/Scipion.desktop ${S_USER_HOME}/Desktop/
+COPY res/scipion_logo.png ${S_USER_HOME}/scipion3/
+COPY res/Scipion.desktop ${S_USER_HOME}/Desktop/
 RUN chmod +x ${S_USER_HOME}/scipion3/scipion_logo.png && \
     chmod +x ${S_USER_HOME}/Desktop/Scipion.desktop
 
 RUN chown -R ${S_USER}:${S_USER} ${S_USER_HOME}/Desktop
 
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility,display
-
-
-USER ${S_USER}
-#######################
-
-COPY hosts.conf ${S_USER_HOME}/scipion3/config/
-
-# Install cryosparc
-USER root
-COPY install_cryosparc_master.sh ${S_USER_HOME}/
-RUN chmod +x ${S_USER_HOME}/install_cryosparc_master.sh
-USER ${S_USER}
-RUN if [ -z "$NOGPU" ]; ${S_USER_HOME}/install_cryosparc_master.sh; then echo "No cryosparc because no gpu in the server"; fi
-
-# Install cryosparc plugin
-RUN ${S_USER_HOME}/scipion3/scipion3 installb pyem
-RUN ${S_USER_HOME}/scipion3/scipion3 installp -p scipion-em-cryosparc2
-
-USER root
-#######################
 
 # Create TurboVNC config
 RUN echo 'no-remote-connections\n\
@@ -127,7 +89,7 @@ no-pam-sessions\n\
 permitted-security-types = TLSVnc, TLSOtp, TLSPlain, TLSNone, X509Vnc, X509Otp, X509Plain, X509None, VNC, OTP, UnixLogin, Plain\
 ' > /etc/turbovncserver-security.conf
 
-ADD res/turbovncserver.conf /etc/turbovncserver.conf
+COPY res/turbovncserver.conf /etc/turbovncserver.conf
 
 # Prepare environment
 RUN mkdir /tmp/.X11-unix || true
@@ -145,11 +107,25 @@ ENV EDITOR=/usr/bin/pluma
 
 COPY self.pem /
 
-# run docker-entrypoint.sh
-COPY docker-entrypoint-root.sh /
-COPY docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint-root.sh && \
-    chmod +x /docker-entrypoint.sh
+USER ${S_USER}
 
-ENTRYPOINT ["/docker-entrypoint-root.sh"]
+COPY hosts.conf ${S_USER_HOME}/scipion3/config/
+
+# Install cryosparc
+COPY install_cryosparc_master.sh ${S_USER_HOME}/
+
+RUN if [ -z $NOGPU ]; then ${S_USER_HOME}/install_cryosparc_master.sh; else echo "No cryosparc because no gpu in the server"; fi
+
+# Install cryosparc plugin
+RUN ${S_USER_HOME}/scipion3/scipion3 python -m pip install pyem
+RUN ${S_USER_HOME}/scipion3/scipion3 installp -p scipion-em-cryosparc2
+
+USER root
+
+COPY docker-entrypoint-root.sh /
+RUN chmod +x /docker-entrypoint-root.sh
+COPY docker-entrypoint.sh ${S_USER_HOME}/
+RUN chmod +x ${S_USER_HOME}/docker-entrypoint.sh
+
+ENTRYPOINT [ "sh", "-c", "/docker-entrypoint-root.sh"]
 
