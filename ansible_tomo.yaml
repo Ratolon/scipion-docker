@@ -6,4 +6,7 @@
     shell: echo "{{ vnc_pass }}" | /opt/TurboVNC/bin/vncpasswd -f > /home/scipion/.vnc/passwd
     become: yes
     become_user: scipion
-
+  - name: restart service tvncserver
+    systemd:
+      state: restarted
+      name: tvncserver
