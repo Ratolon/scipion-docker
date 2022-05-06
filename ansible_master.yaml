@@ -77,10 +77,11 @@
       privileged: yes
       published_ports:
         - 5904:5904
+        - 2222:22
       env:
         USE_DISPLAY: "4"
-        ROOT_PASS: "Scipion4U"
-        USER_PASS: "Scipion4U"
+        ROOT_PASS: "{{ vnc_pass }}"
+        USER_PASS: "{{ vnc_pass }}"
         MYVNCPASSWORD: "{{ vnc_pass }}"
         CRYOSPARC_LICENSE: "{{ cryosparc_license }}"
       volumes:
