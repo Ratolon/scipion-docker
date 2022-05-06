@@ -6,8 +6,8 @@ ARG LIBJPEG_VERSION=1.5.2
 ARG WEBSOCKIFY_VERSION=0.8.0
 ARG NOVNC_VERSION=1.1.0
 
-ARG SLURM_VERSION=20.02.7
-ARG CRYOSPARC_VERSION=3.1.0
+ARG SLURM_VERSION=20.11.9
+ARG CRYOSPARC_VERSION=3.3.2
 
 ARG S_USER=scipionuser
 ARG S_USER_HOME=/home/${S_USER}
@@ -40,7 +40,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     munge \
     libmunge-dev \
     bzip2 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    openssh-server
 
 RUN useradd --uid 1052 -M slurm
 
