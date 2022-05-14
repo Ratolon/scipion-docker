@@ -76,8 +76,8 @@
       image: rinchen.cnb.csic.es/eosc-synergy/scipion-master:devel
       privileged: yes
       published_ports:
-        - 5904:5904
-        - 2222:22
+        - "5904:5904"
+        - "2222:22"
       env:
         USE_DISPLAY: "4"
         ROOT_PASS: "{{ vnc_pass }}"
