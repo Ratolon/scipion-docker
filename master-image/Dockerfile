@@ -65,8 +65,8 @@ RUN curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz |
 # Install Slurm client
 RUN cd /tmp && \
     curl -fsSL -o slurm.tar.bz2 http://ftpgrycap.i3m.upv.es/src/slurm-${SLURM_VERSION}.tar.bz2 && \
-    tar -xjf slurm.tar.bz2 && \
-    cd slurm-${SLURM_VERSION} && \
+    tar -xjf slurm.tar.bz2 -C /usr/local/ && \
+    cd /usr/local/slurm-${SLURM_VERSION} && \
     ./configure && \
     make && \
     make install
