@@ -21,12 +21,13 @@
       slurm_wn_gres: ""
       slurm_wn_gres_tpes: ""
       slurm_wn_gres_conf: ""
-      gpu_num: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_wn''].gpu_count_min|[0]")}}'
+      gpu_num_wn: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_wn''].gpu_count_min|[0]")}}'
+      gpu_num_server: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_server''].gpu_count_min|[0]")}}'
   - set_fact:
       slurm_wn_gres: "gpu:{{ gpu_num }}"
       slurm_wn_gres_tpes: "gpu"
       slurm_wn_gres_conf: "AutoDetect=nvml"
-    when: gpu_num|int > 0
+    when: gpu_num_wn|int > 0
 
   roles:
   - role: indigo-dc.nfs
@@ -36,12 +37,12 @@
     #docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
     docker_config_values: {"mtu": 1442}
     docker_nvidia_support: true
-    when: gpu_num|int > 0
+    when: gpu_num_server|int > 0
   - role: grycap.docker
     #docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
     docker_config_values: {"mtu": 1442}
     docker_nvidia_support: false
-    when: gpu_num|int == 0
+    when: gpu_num_server|int == 0
 
 #    docker_nvidia_driver_version: 440
 
