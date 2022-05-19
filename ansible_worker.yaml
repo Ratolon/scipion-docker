@@ -32,9 +32,15 @@
     nfs_mode: 'client'
     nfs_client_imports: [{ local: "/home/scipionuser/ScipionUserData", remote: "/home/scipionuser/ScipionUserData", server_host: "{{ slurm_front_end_ip }}", opts: "defaults,nolock" }]
   - role: grycap.docker
+    #docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
     docker_config_values: {"mtu": 1442}
     docker_nvidia_support: true
-#    docker_nvidia_driver_version: 440
+    when: gpu_num|int > 0
+  - role: grycap.docker
+    #docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
+    docker_config_values: {"mtu": 1442}
+    docker_nvidia_support: false
+    when: gpu_num|int == 0
   - role: grycap.slurm
     slurm_type_of_node: 'wn'
     slurm_server_name: "{{ vnode_master }}"
