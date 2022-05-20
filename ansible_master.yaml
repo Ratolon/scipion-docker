@@ -21,12 +21,13 @@
       slurm_wn_gres: ""
       slurm_wn_gres_tpes: ""
       slurm_wn_gres_conf: ""
-      gpu_num: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_wn''].gpu_count_min|[0]")}}'
+      gpu_num_wn: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_wn''].gpu_count_min|[0]")}}'
+      gpu_num_server: '{{IM_INFRASTRUCTURE_RADL|json_query("[?id == ''lrms_server''].gpu_count_min|[0]")}}'
   - set_fact:
-      slurm_wn_gres: "gpu:{{ gpu_num }}"
+      slurm_wn_gres: "gpu:{{ gpu_num_wn }}"
       slurm_wn_gres_tpes: "gpu"
       slurm_wn_gres_conf: "AutoDetect=nvml"
-    when: gpu_num|int > 0
+    when: gpu_num_wn|int > 0
 
   roles:
   - role: indigo-dc.nfs
@@ -36,7 +37,15 @@
     #docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
     docker_config_values: {"mtu": 1442}
     docker_nvidia_support: true
+    when: gpu_num_server|int > 0
+  - role: grycap.docker
+    #docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
+    docker_config_values: {"mtu": 1442}
+    docker_nvidia_support: false
+    when: gpu_num_server|int == 0
+
 #    docker_nvidia_driver_version: 440
+
   - role: grycap.slurm
     slurm_type_of_node: 'front'
     slurm_server_name: "{{ vnode_master }}"
@@ -69,11 +78,11 @@
       append: yes
 
   - name: Run Scipion master container
-    #shell: docker run -d --name=scipionmaster --hostname=scipion-master --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="abc" -e USER_PASS="abc" -e CRYOSPARC_LICENSE="a3dc0cc0-3181-11ea-84d0-8b3771c7f13b" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -v /usr/local/etc/slurm.conf:/usr/local/etc/slurm.conf -v /usr/local/etc/gres.conf:/usr/local/etc/gres.conf -v /etc/munge/munge.key:/etc/munge/munge.key --add-host scipion-master:ip rinchen.cnb.csic.es/eosc-synergy/scipion-master:devel
+    #shell: docker run -d --name=scipionmaster --hostname=scipionmaster --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="abc" -e USER_PASS="abc" -e CRYOSPARC_LICENSE="a3dc0cc0-3181-11ea-84d0-8b3771c7f13b" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -v /usr/local/etc/slurm.conf:/usr/local/etc/slurm.conf -v /usr/local/etc/gres.conf:/usr/local/etc/gres.conf -v /etc/munge/munge.key:/etc/munge/munge.key --add-host scipion-master:ip rinchen.cnb.csic.es/eosc-synergy/scipion-master:master
     docker_container:
       name: scipionmaster
-      hostname: "{{ vnode_master }}"
-      image: rinchen.cnb.csic.es/eosc-synergy/scipion-master:devel
+      hostname: scipionmaster
+      image: rinchen.cnb.csic.es/eosc-synergy/scipion-master:master
       privileged: yes
       published_ports:
         - "5904:5904"
