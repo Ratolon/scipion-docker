@@ -2,33 +2,7 @@
 
 This repo contains all pieces of code needed to deploy an scipion single node or cluster using TOSCA, ansible customization recipes and docker images.
 
-## Deploy Scipion using IM dashboard
-
-This is the production way.
-### 1. Go to [IM-dashboard](https://appsgrycap.i3m.upv.es:31443/im-dashboard/login) and log in with your account
-### 2. Make sure your account can use cryoem.instruct-eric.eu Virtual Organization
-Access can be requested [here](https://aai.egi.eu/registry/co_petitions/start/coef:84).
-
-Go to the credentials menu on the right-upper part of the page and add the sites where you want to deploy. Currently the following VOs support this service: IFCA, CESNET and IISAS FedCloud.
-
-![IM - dashboard cloud credentials](docs/im-dashboard-cloud-credentials.png)
-
-Click on the infrastructure wizard for Scipion and fill up the **Input Values** tab with the desired values:
-
- * VNC password
- * RAM, num of CPUs and GPUs for master and workers
- * Cryosparc license
- * Size of the disk to  be attached to the cluster
- * Number of worker nodes in the cluster (by default none = single node deployment)
- 
- On the **Cloud Provider Selection** select the site where you want to deploy the cluster as well as the **Image** (Ubuntu bionic).
-  
-### 3. Submit your infrastructure
-
-You can check the log to see that everything worked well and once the status be **configured** you can click on the URL given in **Outputs** to access the service.
-
-[Here](https://scipion-em.github.io/docs/docs/developer/scipion-on-the-egi-federated-cloud) you can find documentation on how to use the service.
-
+Docker scipion-master image can also be used to run a container with Scipion and a number of preinstalled plugins accesible through noVNC while scipion-worker image can be used to run Scipion tests.
 
 ## Prepare and run Master node manually
 ### Prerequisites (ubuntu packages)
@@ -37,7 +11,7 @@ You can check the log to see that everything worked well and once the status be 
 * X11 server running
 * **xserver-xorg xdm xauth nvidia-container-toolkit nvidia-container-runtime nvidia-docker2**
 
-### Headless machines
+### Host machine
 #### Configure xdm
 When running on headless machine (or a machine where nobody is playing FPS games all the time), 
 make sure the X server accepts unauthenticated local connections even when a user session is not running. 
@@ -45,7 +19,7 @@ E.g., the /etc/X11/xdm/xdm-config file should contain:
 
     DisplayManager*authorize:       false
 
-However, such settings can be dangerous if the machine is not dedicated for this purpos, check for possible side effects.
+However, such settings can be dangerous if the machine is not dedicated for this purpose, check for possible side effects.
 
 #### Configure xorg
 <!-- https://virtualgl.org/Documentation/HeadlessNV -->
@@ -119,7 +93,7 @@ docker pull rinchen.cnb.csic.es/eosc-synergy/scipion-master:devel
 #### Run
 
 ```
-docker run -d --name=scipionmaster --hostname=scipion-master --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="1234" -e USER_PASS="1234" -e MYVNCPASSWORD="1234" -e CRYOSPARC_LICENSE="a0e74f16-3181-11ea-84b9-d7e876129116" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData rinchen.cnb.csic.es/eosc-synergy/scipion-master:devel
+docker run -d --name=scipionmaster --hostname=scipion-master --privileged -p 5904:5904 -e USE_DISPLAY="4" -e ROOT_PASS="1234" -e USER_PASS="1234" -e MYVNCPASSWORD="1234" -e CRYOSPARC_LICENSE="a0e74f16-3181-11ea-84b9-d7e876129116" -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData rinchen.cnb.csic.es/eosc-synergy/scipion-master:master
 ```
 
 Env var "**USE_DISPLAY**" will create new display (e.g. "**:4**").
@@ -137,7 +111,7 @@ In addition, if you are using default docker runtime, you have to run the contai
 
 ### Test the master container
 
-Your instance should be available on the link: "**https://your-adress:5904**".
+Your instance should be available on the link: "**https://your-ip-address:5904?resize=remote**".
 
 You should use the MYVNCPASSWORD to login.
 
@@ -154,7 +128,7 @@ docker pull rinchen.cnb.csic.es/eosc-synergy/scipion-master:devel
 #### Run
 
 ```
-ddocker run -d --name=scipionworker --hostname=scipion-wn-1 --privileged -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -u scipionuser rinchen.cnb.csic.es/eosc-synergy/scipion-worker:devel "/home/scipionuser/scipion3/scipion3 test gctf.tests.test_protocols_gctf.TestGctf"
+docker run -d --name=scipionworker --hostname=scipion-wn-1 --privileged -v /home/scipionuser/ScipionUserData:/home/scipionuser/ScipionUserData -u scipionuser rinchen.cnb.csic.es/eosc-synergy/scipion-worker:devel "/home/scipionuser/scipion3/scipion3 test gctf.tests.test_protocols_gctf.TestGctf"
 ```
 You can map a folder on the host to the ScipionUserData folder in the container to verify the test or you could simple check the container's log.
 
@@ -165,3 +139,28 @@ This example is runing a Gctf test but you could of course run the test you want
 
 If the commands described above print output that do not contains information about nVidia card, try to backup and delete file "**/etc/X11/xorg.conf**".
 -->
+
+## Deploy Scipion using IM dashboard
+
+### 1. Go to [IM-dashboard](https://appsgrycap.i3m.upv.es:31443/im-dashboard/login) and log in with your account
+### 2. Make sure your account can deploy in one of the cloud sites
+In order to deploy in one of the cloud sites the account needs to be enrolled in one Virtual Organization that has signed an agreement with some cloud sites such as the cryoem.instruct-eric.eu Virtual Organization.
+
+Go to the credentials menu on the right-upper part of the page and add the sites where you want to deploy.
+
+![IM - dashboard cloud credentials](docs/im-dashboard-cloud-credentials.png)
+
+Click on the infrastructure wizard for Scipion and fill up the form. 
+
+In the **HW Data** you should specify valus such as number of GPUS, CPUs and RAM for master and worker as well as number of workers in the cluster (0 for a single node). Also the size of the external disk to be attached where Scipion projects will be stored.
+
+In the **ScipionData** tab you need to specify the VNC password and Cryosparc license.
+
+In the **Cloud Provider Selection** tab select the site where you want to deploy the cluster as well as the **Image** (Ubuntu 18 - bionic).
+  
+### 3. Submit your infrastructure
+
+You can check the log to see that everything worked well and once the status be **configured** you can click on the URL given in **Outputs** to access the service. In order to access the host server you need to download the ssh key from the **VM0** link.
+
+[Here](https://scipion-em.github.io/docs/docs/developer/scipion-infrastructure-cloud-usage) you can find documentation on how to use the service.
+
