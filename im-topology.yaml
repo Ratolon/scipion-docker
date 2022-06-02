@@ -14,12 +14,12 @@ topology_template:
       type: string
       description: VNC password
       required: yes
-      default: Scipion4u
+      default: xxxxxxxx
     cryosparc_license:
       type: string
       description: Cryosparc license id
       required: no
-      default: 'a3dc0cc0-3181-11ea-84d0-8b3771c7f13b'
+      default: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
     num_gpus_master:
       type: integer
       description: Number of GPUs to assing to the master
@@ -159,7 +159,7 @@ topology_template:
 
         os:
           properties:
-            image: 'ost://cloud.ui.savba.sk:5000/f7d9d68a-7283-4670-9dc9-2caa77ede59c' #IISAS-FedCloud
+            image: 'ost://cloud.ui.savba.sk:5000/7925c520-7e46-4eb3-9b86-97a7a12cd798' #IISAS-FedCloud
             #image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
             #image: 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8' #CESNET NO GPU
             #image: 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601' #CESNET GPU
@@ -212,7 +212,7 @@ topology_template:
             gpu_vendor: 'nvidia'
         os:
           properties:
-            image: 'ost://cloud.ui.savba.sk:5000/f7d9d68a-7283-4670-9dc9-2caa77ede59c' #IISAS-FedCloud
+            image: 'ost://cloud.ui.savba.sk:5000/7925c520-7e46-4eb3-9b86-97a7a12cd798' #IISAS-FedCloud
             #image: 'ost://api.cloud.ifca.es/1bf25f1c-0140-430b-b0ff-40aec42a5520' #IFCA
             #image: 'ost://identity.cloud.muni.cz/6e60eb4a-aeae-400a-927c-e3643d827601' #CESNET GPU
             #image: 'ost://identity.cloud.muni.cz/e8d75fc1-ac32-4851-90b5-b4c925e9e6f8' #CESNET NO GPU
