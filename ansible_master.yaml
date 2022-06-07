@@ -58,10 +58,6 @@
 # Put here your Ansible recipes to configure the nodes
 
   tasks:
-
-  - name: Reboot server
-    shell: reboot
-
   - name: Install required packages
     apt:
       name: ['xdm', 'curl', 'wget', 'git', 'htop', 'apt-transport-https', 'ca-certificates', 'gnupg-agent', 'software-properties-common', 'xserver-xorg', 'pkg-config']
