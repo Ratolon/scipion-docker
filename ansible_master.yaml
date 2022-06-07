@@ -37,7 +37,7 @@
     #docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
     docker_config_values: {"mtu": 1442}
     docker_nvidia_support: true
-    docker_nvidia_driver_version: 470
+    docker_nvidia_driver_version: 418
     when: gpu_num_server|int > 0
   - role: grycap.docker
     #docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
@@ -58,6 +58,9 @@
 # Put here your Ansible recipes to configure the nodes
 
   tasks:
+
+  - name: Reboot server
+    shell: reboot
 
   - name: Install required packages
     apt:
