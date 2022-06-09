@@ -44,7 +44,6 @@
   - role: grycap.docker
     #docker_config_values: {"mtu": 1442, "data-root": '/home/scipionuser/volume-data/docker'}
     docker_config_values: {"mtu": 1442}
-    docker_nvidia_support: true
     docker_nvidia_driver_version: 440
 
   - role: grycap.slurm
