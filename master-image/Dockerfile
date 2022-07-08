@@ -1,5 +1,5 @@
 
-FROM rinchen.cnb.csic.es/eosc-synergy/scipion-worker:devel
+FROM rinchen.cnb.csic.es/eosc-synergy/scipion-worker:master
 
 ARG TURBOVNC_VERSION=2.2.4
 ARG LIBJPEG_VERSION=1.5.2
@@ -14,6 +14,8 @@ ARG S_USER_HOME=/home/${S_USER}
 ARG CRYOSPARC_LICENSE=a0e74f16-3181-11ea-84b9-d7e876129116
 
 ARG NOGPU
+
+LABEL LICENSE_CRYOSPARC="https://guide.cryosparc.com/licensing/non-commercial-license-agreement"
 
 USER root
 #######################
@@ -45,8 +47,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     munge \
     libmunge-dev \
     bzip2 \
-    && rm -rf /var/lib/apt/lists/* \
-    openssh-server
+    openssh-server \
+    rsync \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --uid 1052 -M slurm
 
