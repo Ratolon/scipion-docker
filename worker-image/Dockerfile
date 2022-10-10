@@ -71,7 +71,8 @@ ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 USER ${S_USER}
 #######################
 
-RUN ["/bin/bash", "-c", "echo $CUDA_HOME"] && ["/bin/bash", "-c", "echo $PATH"]
+RUN ["/bin/bash", "-c", "echo $CUDA_HOME"]
+RUN ["/bin/bash", "-c", "echo $PATH"]
 
 
 # Install Scipion
