@@ -48,7 +48,6 @@ For more information about using a codespace for working on GitHub documentation
 #### Make changes locally
 
 1. [Install Git LFS](https://docs.github.com/en/github/managing-large-files/versioning-large-files/installing-git-large-file-storage).
-
 2. Fork the repository.
 - Using GitHub Desktop:
   - [Getting started with GitHub Desktop](https://docs.github.com/en/desktop/installing-and-configuring-github-desktop/getting-started-with-github-desktop) will guide you through setting up Desktop.
@@ -56,9 +55,7 @@ For more information about using a codespace for working on GitHub documentation
 
 - Using the command line:
   - [Fork the repo](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo#fork-an-example-repository) so that you can make your changes without affecting the original project until you're ready to merge them.
-
 3. Install or update to **Node.js v16**. For more information, see [the development guide](contributing/development.md).
-
 4. Create a working branch and start with your changes!
 
 ### Commit your update
