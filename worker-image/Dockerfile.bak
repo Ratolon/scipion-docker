@@ -1,41 +1,60 @@
-# Create a layer for CUDA 11
-FROM nvidia/cudagl:11.3.0-devel-ubuntu20.04
+FROM nvidia/cudagl:10.2-devel-ubuntu18.04
 
-# Set up user environment vars
 ARG S_USER=scipionuser
 ARG S_USER_HOME=/home/${S_USER}
 ARG XMIPP_VERSION=xmippSrc-v3.22.04.0
 
-# Links to SW Licenses
 LABEL LICENSE_RELION="https://raw.githubusercontent.com/3dem/relion/master/LICENSE" 
 LABEL LICENSE_CISTEM="http://license.janelia.org/license/janelia_license_1_2.html" 
+#      LICENSE_MOTIONCORR2="https://docs.google.com/forms/d/e/1FAIpQLSfAQm5MA81qTx90W9JL6ClzSrM77tytsvyyHh1ZZWrFByhmfQ/viewform" \
 LABEL LICENSE_FSC3D="https://3dfsc.salk.edu/upload/info/"
 
-# Links to SW Licenses (unused/unimplemented)
-# LABEL LICENSE_MOTIONCORR2="https://docs.google.com/forms/d/e/1FAIpQLSfAQm5MA81qTx90W9JL6ClzSrM77tytsvyyHh1ZZWrFByhmfQ/viewform"
-# LABEL LICENSE_CRYOSPARC="https://cryosparc.com/download"
 
-# Add NVIDIA repository keys
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
-apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub && \
-# APT upgrade for updated base \
+# Update nvidia repo keys
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub && \
 apt-get update && \
 apt-get upgrade -y
 
 # Install necessary packages
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-# Base packages, shells, terminals, network, etc \
-ca-certificates bash xterm sudo git openssh-client libnss3 curl wget mesa-utils \
-# Programming languages interpreters, compilers and toolchains \
-gcc g++ openjdk-11-jdk python3 make cmake bison flex \
-# Desktop environment and peripherals (audio, keyboard, clock, etc) libraries \
-tzdata libxcursor-1 libxkbcommon-x11-0 libxft-dev libdbus-1-3 ibasound2 libfontconfig1 libxrender1 \
-# Image and render-related libraries \
-libglu1 libpng-dev libxv1 libxtst6 libfftw3-dev libtiff-dev libjpeg-dev libhdf5-dev\
-# Multi-processing libraries \
-libopenmpi-dev openmpi-bin \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/* 
+	tzdata \
+	bash \
+	make \
+	curl \
+	wget \
+	openssh-client \
+	ca-certificates \
+	python3 \
+	bison \
+	flex \
+	git \
+	sudo \
+    	gcc \
+    	g++ \
+	libxv1 \
+	openjdk-8-jdk \
+	libfftw3-dev \
+	libtiff-dev \
+    	libopenmpi-dev \
+    	openmpi-bin \
+    	mesa-utils \
+    	openssh-client \
+    	cmake \
+    	libnss3 \
+    	libfontconfig1 \
+    	libxrender1 \
+    	libxtst6 \
+    	xterm \
+	ibasound2 \
+    	libglu1 \
+    	libxcursor1 \
+    	libdbus-1-3 \
+	libxkbcommon-x11-0 \
+    	libhdf5-dev \
+    	libxft-dev \
+    	libpng-dev \
+	&& apt-get clean \
+    	&& rm -rf /var/lib/apt/lists/* 
 
 # Create scipionuser
 RUN groupadd --gid 1042 ${S_USER} && \
